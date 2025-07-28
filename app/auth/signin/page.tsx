@@ -63,7 +63,7 @@ function SignInForm() {
   return (
     <AuthLayout
       title="Sign In"
-      subtitle="Welcome back to BuildAI"
+              subtitle="Welcome back to Dinamiq"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {successMessage && (

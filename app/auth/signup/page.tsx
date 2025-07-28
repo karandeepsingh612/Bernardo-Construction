@@ -61,7 +61,7 @@ export default function SignUpPage() {
   return (
     <AuthLayout
       title="Create Account"
-      subtitle="Join BuildAI to manage your construction projects"
+              subtitle="Join Dinamiq to manage your construction projects"
     >
       <form 
         onSubmit={handleSubmit(onSubmit)}

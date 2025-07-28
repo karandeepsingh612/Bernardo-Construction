@@ -7,12 +7,12 @@ import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from "@/lib/auth/auth-context"
 import { AuthNav } from "@/components/auth/auth-nav"
 import Link from "next/link"
-import { HardHat, Home, FileText, Plus } from "lucide-react"
+import { Home, FileText, Plus } from "lucide-react"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "BuildAI - Construction Management System",
+  title: "Dinamiq - Construction Management System",
   description: "Manage your construction material requisitions efficiently with AI-powered insights",
     generator: 'v0.dev'
 }
@@ -31,14 +31,8 @@ export default function RootLayout({
               <nav className="bg-white/80 backdrop-blur-md shadow-lg border-b border-blue-100">
                 <div className="container mx-auto px-4">
                   <div className="flex items-center justify-between h-16">
-                    <Link href="/" className="flex items-center gap-3">
-                      <div className="relative">
-                        <HardHat className="h-8 w-8 text-blue-600" />
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full"></div>
-                      </div>
-                      <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                        BuildAI
-                      </span>
+                    <Link href="/" className="flex items-center">
+                      <img src="/dinamiq-log.png" alt="Dinamiq Logo" className="h-8 w-auto" />
                     </Link>
 
                     <div className="flex items-center gap-2">
