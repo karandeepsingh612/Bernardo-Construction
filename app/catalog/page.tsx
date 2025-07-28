@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useAuth } from "@/lib/auth/auth-context";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 
 const PAGE_SIZE = 10;
 
@@ -20,7 +22,7 @@ type CatalogItem = {
   created_at: string;
 };
 
-export default function CatalogPage() {
+function CatalogPageContent() {
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -570,5 +572,13 @@ export default function CatalogPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function CatalogPage() {
+  return (
+    <ProtectedRoute>
+      <CatalogPageContent />
+    </ProtectedRoute>
   );
 } 

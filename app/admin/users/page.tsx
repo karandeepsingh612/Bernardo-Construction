@@ -50,6 +50,7 @@ import {
 } from 'lucide-react'
 import { canManageUsers, getRoleDisplayName } from '@/lib/permissions'
 import { useToast } from '@/hooks/use-toast'
+import { ProtectedRoute } from '@/components/auth/protected-route'
 
 interface UserProfile {
   id: string
@@ -62,7 +63,7 @@ interface UserProfile {
   updated_at: string
 }
 
-export default function UserManagementPage() {
+function UserManagementPageContent() {
   const { user } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
@@ -633,5 +634,13 @@ export default function UserManagementPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  )
+}
+
+export default function UserManagementPage() {
+  return (
+    <ProtectedRoute>
+      <UserManagementPageContent />
+    </ProtectedRoute>
   )
 } 

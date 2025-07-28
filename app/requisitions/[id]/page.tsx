@@ -25,8 +25,9 @@ import { cn } from "@/lib/utils"
 import { DocumentUpload } from "@/components/document-upload"
 import { DatePicker } from "@/components/date-picker"
 import { useAuth } from "@/lib/auth/auth-context"
+import { ProtectedRoute } from "@/components/auth/protected-route"
 
-export default function RequisitionDetailPage() {
+function RequisitionDetailPageContent() {
   const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
@@ -759,5 +760,13 @@ export default function RequisitionDetailPage() {
         </Dialog>
       </div>
     </div>
+  )
+}
+
+export default function RequisitionDetailPage() {
+  return (
+    <ProtectedRoute>
+      <RequisitionDetailPageContent />
+    </ProtectedRoute>
   )
 }

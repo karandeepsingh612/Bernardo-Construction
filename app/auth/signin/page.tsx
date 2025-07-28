@@ -53,7 +53,14 @@ function SignInForm() {
     try {
       clearError()
       await signIn(data)
-      router.push('/')
+      
+      // Check if there's a redirect URL
+      const redirectUrl = searchParams.get('redirect')
+      if (redirectUrl) {
+        router.push(decodeURIComponent(redirectUrl))
+      } else {
+        router.push('/')
+      }
     } catch (error) {
       // Error is handled by the auth context
       console.error('Sign in error:', error)

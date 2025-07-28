@@ -8,8 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Plus, FileText, Users, Activity, Clock, CheckCircle, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth/auth-context"
+import { ProtectedRoute } from "@/components/auth/protected-route"
 
-export default function Dashboard() {
+function DashboardContent() {
   const { user } = useAuth()
   const [requisitions, setRequisitions] = useState<Requisition[]>([])
 
@@ -371,6 +372,14 @@ export default function Dashboard() {
       </div>
     </div>
     </>
+  )
+}
+
+export default function Dashboard() {
+  return (
+    <ProtectedRoute>
+      <DashboardContent />
+    </ProtectedRoute>
   )
 }
 

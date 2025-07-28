@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { loadRequisitions } from "@/lib/requisitionService"
-import { loadUserRole } from "@/lib/storage"
 import type { Requisition, UserRole } from "@/types"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -27,6 +26,8 @@ import { Eye, ArrowUpDown, LayoutGrid, LayoutList } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { STATUS_LABELS, STAGE_LABELS } from "@/types"
+import { useAuth } from "@/lib/auth/auth-context"
+import { ProtectedRoute } from "@/components/auth/protected-route"
 import {
   Tooltip,
   TooltipContent,
@@ -36,19 +37,18 @@ import {
 
 const PAGE_SIZE = 10
 
-export default function RequisitionsPage() {
+function RequisitionsPageContent() {
+  const { user } = useAuth()
   const [requisitions, setRequisitions] = useState<Requisition[]>([])
   const [loading, setLoading] = useState(true)
-  const [userRole, setUserRole] = useState<UserRole | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [page, setPage] = useState(1)
   const [viewMode, setViewMode] = useState<'card' | 'table'>('card')
 
+  // Get user role from authenticated user
+  const userRole = user?.role as UserRole
+
   useEffect(() => {
-    const savedRole = loadUserRole() as UserRole
-    if (savedRole) {
-      setUserRole(savedRole)
-    }
 
     loadRequisitions()
       .then(data => {
@@ -380,5 +380,13 @@ export default function RequisitionsPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function RequisitionsPage() {
+  return (
+    <ProtectedRoute>
+      <RequisitionsPageContent />
+    </ProtectedRoute>
   )
 }

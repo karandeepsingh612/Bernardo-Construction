@@ -17,8 +17,9 @@ import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { v4 as uuidv4 } from 'uuid'
 import { useAuth } from "@/lib/auth/auth-context"
+import { ProtectedRoute } from "@/components/auth/protected-route"
 
-export default function NewRequisitionPage() {
+function NewRequisitionPageContent() {
   const router = useRouter()
   const { toast } = useToast()
   const { user } = useAuth()
@@ -282,5 +283,13 @@ export default function NewRequisitionPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function NewRequisitionPage() {
+  return (
+    <ProtectedRoute>
+      <NewRequisitionPageContent />
+    </ProtectedRoute>
   )
 }

@@ -6,8 +6,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from "@/lib/auth/auth-context"
 import { AuthNav } from "@/components/auth/auth-nav"
+import { NavigationLinks } from "@/components/auth/navigation-links"
 import Link from "next/link"
-import { Home, FileText, Plus } from "lucide-react"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -36,36 +36,9 @@ export default function RootLayout({
                     </Link>
 
                     <div className="flex items-center gap-2">
-                      <Link
-                        href="/"
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                      >
-                        <Home className="h-4 w-4" />
-                        Dashboard
-                      </Link>
-                      <Link
-                        href="/catalog"
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all duration-200"
-                      >
-                        <FileText className="h-4 w-4" />
-                        Catalog
-                      </Link>
-                      <Link
-                        href="/requisitions"
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                      >
-                        <FileText className="h-4 w-4" />
-                        Requisitions
-                      </Link>
-                                          <Link
-                      href="/requisitions/new"
-                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
-                    >
-                      <Plus className="h-4 w-4" />
-                      New
-                    </Link>
-                    <AuthNav />
-                  </div>
+                      <NavigationLinks />
+                      <AuthNav />
+                    </div>
                   </div>
                 </div>
               </nav>
