@@ -64,6 +64,12 @@ export function getNextStage(currentStage: WorkflowStage): WorkflowStage | null 
 
 export function canUserAccessStage(userRole: WorkflowStage | null, stage: WorkflowStage): boolean {
   if (!userRole) return false;
+  
+  // Treasury role can access both treasury and payment stages
+  if (userRole === "treasury") {
+    return stage === "treasury" || stage === "payment";
+  }
+  
   return userRole === stage;
 }
 
@@ -127,7 +133,7 @@ export function getDeliveryStatus(records: DeliveryRecord[] | undefined | null, 
   const totalQuantity = records.reduce((sum, record) => sum + (record.quantity || 0), 0);
 
   if (totalQuantity === 0) return "pending";
-  if (totalQuantity >= targetQuantity) return "complete";
+  if (totalQuantity >= targetQuantity) return "Complete";
   return "partial";
 }
 
@@ -173,12 +179,12 @@ export const stageCompletionRules: Record<WorkflowStage, (requisition: Requisiti
   },
   payment: (requisition) => {
     return requisition.items.every(item => 
-      item.approvalStatus !== "approved" || item.paymentStatus === "paid"
+      item.approvalStatus !== "approved" || item.paymentStatus === "completed"
     );
   },
   storekeeper: (requisition) => {
     return requisition.items.every(item => 
-      item.deliveryStatus === "complete"
+      item.deliveryStatus === "Complete"
     );
   }
 };

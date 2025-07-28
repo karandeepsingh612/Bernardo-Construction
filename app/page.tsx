@@ -2,24 +2,21 @@
 
 import { useState, useEffect } from "react"
 import type { UserRole, Requisition } from "@/types"
-import { loadUserRole } from "@/lib/storage"
 import { loadRequisitions } from "@/lib/requisitionService"
-import { RoleSelector } from "@/components/role-selector"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, FileText, Users, Activity, Clock, CheckCircle, AlertCircle } from "lucide-react"
 import Link from "next/link"
+import { useAuth } from "@/lib/auth/auth-context"
 
 export default function Dashboard() {
-  const [userRole, setUserRole] = useState<UserRole | null>(null)
+  const { user } = useAuth()
   const [requisitions, setRequisitions] = useState<Requisition[]>([])
 
+  // Get user role from authenticated user
+  const userRole = user?.role as UserRole
+
   useEffect(() => {
-    const savedRole = loadUserRole() as UserRole
-    if (savedRole) {
-      setUserRole(savedRole)
-    }
-    
     // Load requisitions
     loadRequisitions()
       .then(data => {

@@ -26,7 +26,7 @@ import {
   TableCell,
   TableCaption,
 } from "@/components/ui/table"
-import { WorkflowStage } from "@/types/workflow";
+
 
 interface MaterialItemsTableProps {
   items: RequisitionItem[]
@@ -354,11 +354,11 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
     }
 
     // --- Ensure deliveryStatus is in sync with delivery records ---
-    const totalReceived = (updatedItem.deliveryRecords || []).reduce((sum, record) => sum + (record.quantityReceived || 0), 0)
+    const totalReceived = (updatedItem.deliveryRecords || []).reduce((sum, record) => sum + (record.quantity || 0), 0)
     if (totalReceived === 0) {
       updatedItem.deliveryStatus = "pending"
     } else if (totalReceived >= updatedItem.amount) {
-      updatedItem.deliveryStatus = "complete"
+      updatedItem.deliveryStatus = "Complete"
     } else {
       updatedItem.deliveryStatus = "partial"
     }
@@ -388,7 +388,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
   }
 
   // Direct update function for payment status to ensure proper state updates
-  const updatePaymentStatus = (value: string) => {
+  const updatePaymentStatus = (value: PaymentStatus) => {
     if (!editingItem) return
     console.log("Updating payment status to:", value);
     setEditingItem({
@@ -498,8 +498,8 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
       let bValue = b[sortColumn as keyof RequisitionItem]
       // For nested or computed fields
       if (sortColumn === 'qtyReceived') {
-        aValue = getTotalQuantityReceived(a)
-        bValue = getTotalQuantityReceived(b)
+        aValue = getTotalQuantityReceived(a.deliveryRecords)
+        bValue = getTotalQuantityReceived(b.deliveryRecords)
       }
       if (sortColumn === 'total') {
         aValue = a.total || 0
@@ -534,6 +534,8 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
       requisitionItemId: item.id,
       deliveryDate: new Date().toISOString().split("T")[0],
       quantity: 0,
+      qualityCheck: '',
+      receivedBy: '',
     };
     const updatedRecords = [...(editingItem.deliveryRecords || []), newRecord];
     setEditingItem({
@@ -709,13 +711,13 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                         <TableCell>
                           <Badge
                             className={cn(
-                              getDeliveryStatus(item.deliveryRecords, item.amount) === "complete" && "bg-green-100 text-green-800",
+                              getDeliveryStatus(item.deliveryRecords, item.amount) === "Complete" && "bg-green-100 text-green-800",
                               getDeliveryStatus(item.deliveryRecords, item.amount) === "partial" && "bg-blue-100 text-blue-800",
                               getDeliveryStatus(item.deliveryRecords, item.amount) === "rejected" && "bg-red-100 text-red-800",
                               getDeliveryStatus(item.deliveryRecords, item.amount) === "pending" && "bg-yellow-100 text-yellow-800"
                             )}
                           >
-                            {getDeliveryStatus(item.deliveryRecords, item.amount) === "complete"
+                            {getDeliveryStatus(item.deliveryRecords, item.amount) === "Complete"
                               ? "Completed"
                               : getDeliveryStatus(item.deliveryRecords, item.amount).charAt(0).toUpperCase() + getDeliveryStatus(item.deliveryRecords, item.amount).slice(1)}
                           </Badge>
@@ -1158,7 +1160,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                               paymentNumber: generatePaymentNumber()
                             });
                           } else {
-                            updatePaymentStatus(value);
+                            updatePaymentStatus(value as PaymentStatus);
                           }
                         }}
                         disabled={!canEditField("paymentStatus")}
@@ -1256,12 +1258,12 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                         <Badge
                           className={cn(
                             "text-sm font-semibold px-2 py-0",
-                            getDeliveryStatus(editingItem.deliveryRecords, editingItem.amount) === "complete" && "bg-green-100 text-green-800",
+                            getDeliveryStatus(editingItem.deliveryRecords, editingItem.amount) === "Complete" && "bg-green-100 text-green-800",
                             getDeliveryStatus(editingItem.deliveryRecords, editingItem.amount) === "partial" && "bg-yellow-100 text-yellow-800",
                             getDeliveryStatus(editingItem.deliveryRecords, editingItem.amount) === "pending" && "bg-gray-100 text-gray-800"
                           )}
                         >
-                          {getDeliveryStatus(editingItem.deliveryRecords, editingItem.amount) === "complete"
+                                                      {getDeliveryStatus(editingItem.deliveryRecords, editingItem.amount) === "Complete"
                             ? "Completed"
                             : getDeliveryStatus(editingItem.deliveryRecords, editingItem.amount).charAt(0).toUpperCase() +
                               getDeliveryStatus(editingItem.deliveryRecords, editingItem.amount).slice(1)}

@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import type { Requisition, RequisitionItem, UserRole } from "@/types"
-import { loadUserRole } from "@/lib/storage"
 import { saveRequisition, generateRequisitionNumber } from "@/lib/requisitionService"
 import { RoleSelector } from "@/components/role-selector"
 import { MaterialItemsTable } from "@/components/material-items-table"
@@ -13,15 +12,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Save, ArrowLeft, AlertCircle } from "lucide-react"
+import { Save, ArrowLeft, AlertCircle, User } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { v4 as uuidv4 } from 'uuid'
+import { useAuth } from "@/lib/auth/auth-context"
 
 export default function NewRequisitionPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const [userRole, setUserRole] = useState<UserRole | null>(null)
+  const { user } = useAuth()
   const [isSaving, setIsSaving] = useState(false)
   const [requisition, setRequisition] = useState<Requisition>({
     id: uuidv4(),
@@ -49,12 +49,10 @@ export default function NewRequisitionPage() {
     documents: [],
   })
 
-  useEffect(() => {
-    const savedRole = loadUserRole() as UserRole
-    if (savedRole) {
-      setUserRole(savedRole)
-    }
+  // Get user role from authenticated user
+  const userRole = user?.role as UserRole
 
+  useEffect(() => {
     // Generate requisition number
     setRequisition((prev) => ({
       ...prev,
@@ -90,7 +88,7 @@ export default function NewRequisitionPage() {
       }
 
       console.log('Saving requisition:', JSON.stringify(updatedRequisition, null, 2))
-      await saveRequisition(updatedRequisition)
+      await saveRequisition(updatedRequisition, user?.fullName)
 
       toast({
         title: "Success",
@@ -99,19 +97,10 @@ export default function NewRequisitionPage() {
 
       router.push(`/requisitions/${requisition.id}`)
     } catch (error) {
-      console.error('Failed to save requisition:', error)
-      if (error instanceof Error) {
-        console.error('Error details:', error.message)
-        if ('code' in error) {
-          console.error('Error code:', (error as any).code)
-        }
-        if ('details' in error) {
-          console.error('Error details:', (error as any).details)
-        }
-      }
+      console.error("Error saving requisition:", error)
       toast({
         title: "Error",
-        description: "Failed to save requisition. Please check the console for details.",
+        description: "Failed to save requisition",
         variant: "destructive",
       })
     } finally {
@@ -122,12 +111,7 @@ export default function NewRequisitionPage() {
   const handleItemsChange = (items: RequisitionItem[]) => {
     setRequisition((prev) => ({
       ...prev,
-      items: items.map(item => ({
-        ...item,
-        id: item.id || uuidv4(),
-        requisitionId: prev.id,
-      })),
-      lastModified: new Date().toISOString(),
+      items,
     }))
   }
 
@@ -135,7 +119,6 @@ export default function NewRequisitionPage() {
     setRequisition((prev) => ({
       ...prev,
       projectName,
-      lastModified: new Date().toISOString(),
     }))
   }
 
@@ -143,30 +126,47 @@ export default function NewRequisitionPage() {
     setRequisition((prev) => ({
       ...prev,
       residentComments: comments,
-      lastModified: new Date().toISOString(),
     }))
   }
 
-  if (!userRole) {
+  // Show loading state while user data is being fetched
+  if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-md mx-auto">
           <CardHeader>
-            <CardTitle>Select Your Role</CardTitle>
+            <CardTitle>Loading...</CardTitle>
           </CardHeader>
           <CardContent>
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>Please select your role to create a requisition.</AlertDescription>
-            </Alert>
-            <div className="mt-4">
-              <RoleSelector currentRole={userRole} onRoleChange={setUserRole} />
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           </CardContent>
         </Card>
       </div>
     )
   }
+
+  // Show error if user doesn't have a role
+  if (!userRole) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card className="max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle>Access Error</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>Unable to determine your role. Please contact support.</AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Only allow resident and procurement roles to create requisitions
   if (userRole !== 'resident' && userRole !== 'procurement') {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -180,7 +180,7 @@ export default function NewRequisitionPage() {
               <AlertDescription>Only Resident or Procurement roles can create a requisition.</AlertDescription>
             </Alert>
             <div className="mt-4">
-              <RoleSelector currentRole={userRole} onRoleChange={setUserRole} />
+              <RoleSelector userRole={userRole} />
             </div>
           </CardContent>
         </Card>
@@ -203,7 +203,7 @@ export default function NewRequisitionPage() {
             <p className="text-gray-600 mt-2">Requisition Number: {requisition.requisitionNumber}</p>
           </div>
         </div>
-        <RoleSelector currentRole={userRole} onRoleChange={setUserRole} />
+        <RoleSelector userRole={userRole} />
       </div>
 
       <div className="space-y-6">
@@ -243,6 +243,7 @@ export default function NewRequisitionPage() {
               onItemsChange={handleItemsChange}
               userRole={userRole}
               requisitionId={requisition.id}
+              currentStage={requisition.currentStage}
             />
           </CardContent>
         </Card>
@@ -250,25 +251,32 @@ export default function NewRequisitionPage() {
         {/* Comments */}
         <Card>
           <CardHeader>
-            <CardTitle>Resident Comments</CardTitle>
+            <CardTitle>Comments</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea
-              value={requisition.residentComments}
-              onChange={(e) => handleCommentsChange(e.target.value)}
-              placeholder="Add any comments or special instructions..."
-              rows={4}
-            />
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="comments">Comments</Label>
+                <Textarea
+                  id="comments"
+                  value={requisition.residentComments}
+                  onChange={(e) => handleCommentsChange(e.target.value)}
+                  placeholder="Add any additional comments..."
+                  rows={4}
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Actions */}
+        {/* Action Buttons */}
         <div className="flex justify-end gap-4">
           <Button variant="outline" onClick={() => handleSave(true)} disabled={isSaving}>
             <Save className="h-4 w-4 mr-2" />
-            Save as Draft
+            {isSaving ? "Saving..." : "Save as Draft"}
           </Button>
           <Button onClick={() => handleSave(false)} disabled={isSaving}>
+            <Save className="h-4 w-4 mr-2" />
             {isSaving ? "Creating..." : "Create Requisition"}
           </Button>
         </div>

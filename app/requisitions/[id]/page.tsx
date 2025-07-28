@@ -3,9 +3,8 @@
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import type { Requisition, UserRole, WorkflowStage } from "@/types"
-import { loadUserRole } from "@/lib/storage"
 import { loadRequisition, saveRequisition } from "@/lib/requisitionService"
-import { getNextStage, stageCompletionRules } from "@/lib/permissions"
+import { getNextStage, stageCompletionRules, canUserAccessStage } from "@/lib/permissions"
 import { RoleSelector } from "@/components/role-selector"
 import { StageProgress } from "@/components/stage-progress"
 import { MaterialItemsTable } from "@/components/material-items-table"
@@ -16,6 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { STATUS_LABELS, STAGE_LABELS } from "@/types"
 import { ArrowLeft, Save, FileText, Calendar, User, ChevronDown, ChevronRight, AlertCircle, BookmarkIcon, DollarSign, Briefcase, GitBranch, CalendarRange, ListChecks, Files } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
@@ -24,12 +24,13 @@ import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { DocumentUpload } from "@/components/document-upload"
 import { DatePicker } from "@/components/date-picker"
+import { useAuth } from "@/lib/auth/auth-context"
 
 export default function RequisitionDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
-  const [userRole, setUserRole] = useState<UserRole | null>(null)
+  const { user } = useAuth()
   const [requisition, setRequisition] = useState<Requisition | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -40,6 +41,32 @@ export default function RequisitionDetailPage() {
   const bottomPanelRef = useRef<HTMLDivElement>(null)
   const [savedForLaterExpanded, setSavedForLaterExpanded] = useState(false)
   const [week, setWeek] = useState<string>(requisition?.week || "")
+
+    // Get user role from authenticated user
+  const userRole = user?.role as UserRole
+
+  // Helper functions for role display
+  const getRoleDisplayName = (role: UserRole): string => {
+    switch (role) {
+      case "resident": return "Resident"
+      case "procurement": return "Procurement"
+      case "treasury": return "Treasury"
+      case "ceo": return "CEO"
+      case "storekeeper": return "Storekeeper"
+      default: return "Unknown"
+    }
+  }
+
+  const getRoleColor = (role: UserRole): string => {
+    switch (role) {
+      case "resident": return "bg-blue-100 text-blue-800"
+      case "procurement": return "bg-green-100 text-green-800"
+      case "treasury": return "bg-purple-100 text-purple-800"
+      case "ceo": return "bg-orange-100 text-orange-800"
+      case "storekeeper": return "bg-pink-100 text-pink-800"
+      default: return "bg-gray-100 text-gray-800"
+    }
+  }
 
   // Add effect to update requisition when week changes
   useEffect(() => {
@@ -52,7 +79,7 @@ export default function RequisitionDetailPage() {
       setRequisition(updatedRequisition)
       
       // Save to Supabase
-      saveRequisition(updatedRequisition)
+      saveRequisition(updatedRequisition, user?.fullName)
         .catch(error => {
           console.error('Failed to save week date:', error)
           toast({
@@ -72,11 +99,6 @@ export default function RequisitionDetailPage() {
   }, [requisition?.week])
 
   useEffect(() => {
-    const savedRole = loadUserRole() as UserRole
-    if (savedRole) {
-      setUserRole(savedRole)
-    }
-
     // Load requisition
     loadRequisition(params.id as string)
       .then(data => {
@@ -106,7 +128,7 @@ export default function RequisitionDetailPage() {
               lastModified: new Date().toISOString(),
             }
       
-      await saveRequisition(updatedRequisition)
+      await saveRequisition(updatedRequisition, user?.fullName)
 
       toast({
         title: "Success",
@@ -160,7 +182,7 @@ export default function RequisitionDetailPage() {
     updatedRequisition.lastModified = new Date().toISOString()
 
     try {
-      await saveRequisition(updatedRequisition)
+      await saveRequisition(updatedRequisition, user?.fullName)
     setRequisition(updatedRequisition)
 
     toast({
@@ -191,7 +213,7 @@ export default function RequisitionDetailPage() {
     };
 
     try {
-      await saveRequisition(updatedRequisition)
+      await saveRequisition(updatedRequisition, user?.fullName)
       setRequisition(updatedRequisition)
     } catch (error) {
       console.error('Failed to update items:', error)
@@ -249,7 +271,7 @@ export default function RequisitionDetailPage() {
         break
       case "storekeeper":
         requisition.items.forEach((item, index) => {
-          if (!item.deliveryStatus || item.deliveryStatus !== "complete") {
+          if (!item.deliveryStatus || item.deliveryStatus !== "Complete") {
             errors.push(`Item ${index + 1}: Delivery must be fully completed before this stage can be completed.`)
           }
         })
@@ -269,7 +291,7 @@ export default function RequisitionDetailPage() {
     }
 
     try {
-      await saveRequisition(updatedRequisition)
+      await saveRequisition(updatedRequisition, user?.fullName)
       setRequisition(updatedRequisition)
     } catch (error) {
       console.error('Failed to update documents:', error)
@@ -306,6 +328,43 @@ export default function RequisitionDetailPage() {
       default:
         return "bg-yellow-100 text-yellow-800"
     }
+  }
+
+  // Show loading state while user data is being fetched
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card className="max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle>Loading...</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Show error if user doesn't have a role
+  if (!userRole) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card className="max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle>Access Error</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>Unable to determine your role. Please contact support.</AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   if (loading) {
@@ -355,7 +414,7 @@ export default function RequisitionDetailPage() {
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            {userRole === requisition.currentStage && (
+            {canUserAccessStage(userRole, requisition.currentStage) && (
               <Button 
                 variant="default" 
                 className="bg-green-600 hover:bg-green-700 text-white"
@@ -367,7 +426,7 @@ export default function RequisitionDetailPage() {
                     setShowValidationErrors(true);
                     return;
                   }
-                  handleStageComplete(userRole, comments);
+                  handleStageComplete(requisition.currentStage, comments);
                 }}
               >
                 Complete Stage
@@ -378,7 +437,7 @@ export default function RequisitionDetailPage() {
             {isSaving ? "Saving..." : "Save"}
           </Button>
           </div>
-          <RoleSelector currentRole={userRole} onRoleChange={setUserRole} />
+          <RoleSelector userRole={userRole} />
         </div>
       </div>
 
@@ -405,11 +464,20 @@ export default function RequisitionDetailPage() {
                     })()}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 h-9 mt-4">
+                                <div className="flex items-center gap-2 h-9 mt-4">
                   <Briefcase className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <div>
                     <span className="font-medium">Project Name:</span>{" "}
                     {requisition.projectName}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 h-9 mt-4">
+                  <User className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                  <div>
+                    <span className="font-medium">Your Role:</span>{" "}
+                    <Badge className={getRoleColor(userRole)}>
+                      {getRoleDisplayName(userRole)}
+                    </Badge>
                   </div>
                 </div>
               </div>
@@ -560,6 +628,7 @@ export default function RequisitionDetailPage() {
           userRole={userRole || "resident"}
           currentStage={requisition.currentStage}
           requisitionId={requisition.id}
+          userName={user?.fullName}
         />
 
         {/* Stage Comments - Collapsible */}

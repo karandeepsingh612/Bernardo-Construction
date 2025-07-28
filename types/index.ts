@@ -2,7 +2,7 @@ export type RequisitionStatus = 'draft' | 'pending-procurement' | 'pending-treas
 export type WorkflowStage = 'resident' | 'procurement' | 'treasury' | 'ceo' | 'payment' | 'storekeeper';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'partial' | 'Save for Later';
 export type PaymentStatus = 'pending' | 'paid' | 'rejected' | 'completed';
-export type DeliveryStatus = 'pending' | 'partial' | 'complete' | 'rejected';
+export type DeliveryStatus = 'pending' | 'partial' | 'complete' | 'Complete' | 'rejected';
 
 export type DocumentType = 
   | 'supplier_quote'
@@ -62,7 +62,7 @@ export interface Document {
   fileType: string;
   fileSize: number;
   uploadDate: string;
-  uploadedBy: UserRole;
+  uploadedBy: string; // Changed from UserRole to string to allow full names
   documentType: DocumentType;
   stage: WorkflowStage;
   url?: string;
@@ -104,6 +104,7 @@ export interface RequisitionItem {
   deliveryRecords: DeliveryRecord[];
   createdAt?: string;
   updatedAt?: string;
+  createdBy?: string;
 }
 
 export interface Requisition {
@@ -136,6 +137,7 @@ export interface Requisition {
 
   items: RequisitionItem[];
   documents: Document[];
+  createdBy?: string;
 }
 
 export type UserRole = WorkflowStage;

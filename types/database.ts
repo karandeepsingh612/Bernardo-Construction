@@ -92,6 +92,7 @@ export type Database = {
           delivery_notes?: string;
           created_at?: string;
           updated_at?: string;
+          created_by?: string;
         };
         Insert: Omit<Tables['requisition_items']['Row'], 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Tables['requisition_items']['Row']>;
@@ -120,6 +121,7 @@ export type Database = {
           ceo_comments?: string;
           payment_comments?: string;
           storekeeper_comments?: string;
+          created_by?: string;
         };
         Insert: Omit<Tables['requisitions']['Row'], 'id'>;
         Update: Partial<Tables['requisitions']['Row']>;

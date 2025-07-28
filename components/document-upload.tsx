@@ -35,6 +35,7 @@ interface DocumentUploadProps {
   userRole: UserRole
   currentStage: WorkflowStage
   requisitionId: string
+  userName?: string // Add user's full name
 }
 
 export function DocumentUpload({
@@ -43,6 +44,7 @@ export function DocumentUpload({
   userRole,
   currentStage,
   requisitionId,
+  userName,
 }: DocumentUploadProps) {
   const { toast } = useToast()
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
@@ -302,7 +304,7 @@ export function DocumentUpload({
         fileType: fileType,
       fileSize: selectedFile.size,
       uploadDate: new Date().toISOString(),
-      uploadedBy: userRole,
+      uploadedBy: userName || userRole, // Use user's full name or role
       documentType: selectedDocumentType,
       stage: currentStage,
         url: publicUrl,
@@ -313,6 +315,31 @@ export function DocumentUpload({
         type: selectedDocumentType,
         size: selectedFile.size
       }
+
+      // 3. Save document to database
+      console.log('Saving document to database:', newDocument)
+      const { error: dbError } = await supabase
+        .from('documents')
+        .insert({
+          id: documentId,
+          requisition_id: requisitionId,
+          name: selectedFile.name,
+          type: selectedDocumentType,
+          size: selectedFile.size,
+          uploaded_by: userName || userRole, // Save the user's name to database
+          stage: currentStage,
+          url: publicUrl,
+          file_path: fileName,
+          bucket_id: 'documents'
+          // uploaded_at will be set automatically by the default value
+        })
+
+      if (dbError) {
+        console.error('Database insert error:', dbError)
+        throw new Error(`Failed to save document record: ${dbError.message}`)
+      }
+
+      console.log('Document saved to database successfully')
 
       // Update UI
     onDocumentsChange([...documents, newDocument])

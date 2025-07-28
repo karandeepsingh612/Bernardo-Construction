@@ -109,7 +109,7 @@ export function StageCompletionPanel({ requisition, userRole, onComplete }: Stag
         break
       case "storekeeper":
         requisition.items.forEach((item, index) => {
-          if (!item.deliveryStatus || item.deliveryStatus !== "completed") {
+          if (!item.deliveryStatus || item.deliveryStatus !== "complete") {
             errors.push(`Item ${index + 1}: Delivery must be fully completed before this stage can be completed.`)
           }
         })

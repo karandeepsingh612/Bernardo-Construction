@@ -33,6 +33,7 @@ interface DatabaseRequisition {
   ceo_comments?: string;
   payment_comments?: string;
   storekeeper_comments?: string;
+  created_by?: string;
 }
 
 interface DatabaseRequisitionItem {
@@ -62,6 +63,7 @@ interface DatabaseRequisitionItem {
   quantity_received?: number;
   quality_check?: string;
   delivery_notes?: string;
+  created_by?: string;
 }
 
 interface DatabaseDeliveryRecord {
@@ -82,9 +84,13 @@ interface DatabaseDocument {
   bucket_id: string;
   type: string;
   size: number;
+  uploaded_by?: string;
+  stage?: string;
+  url?: string;
+  uploaded_at?: string;
 }
 
-export async function saveRequisition(requisition: Requisition) {
+export async function saveRequisition(requisition: Requisition, userName?: string) {
   try {
     // If no ID is provided, generate one
     if (!requisition.id) {
@@ -122,6 +128,7 @@ export async function saveRequisition(requisition: Requisition) {
         ceo_comments: requisition.ceoComments,
         payment_comments: requisition.paymentComments,
         storekeeper_comments: requisition.storekeeperComments,
+        created_by: userName || 'Unknown User',
       })
       .select()
       .single();
@@ -174,6 +181,7 @@ export async function saveRequisition(requisition: Requisition) {
             quantity_received: item.quantityReceived || null,
             quality_check: item.qualityCheck || null,
             delivery_notes: item.deliveryNotes || null,
+            created_by: userName || 'Unknown User',
           };
         })
       );
@@ -293,12 +301,12 @@ export async function loadRequisitions(): Promise<Requisition[]> {
         fileType: doc.type,
         documentType,
         fileSize: doc.size,
-        uploadDate: new Date().toISOString(),
-        uploadedBy: currentStage,
-        stage: currentStage,
+        uploadDate: doc.uploaded_at || new Date().toISOString(),
+        uploadedBy: doc.uploaded_by || currentStage, // Use actual uploaded_by from database
+        stage: doc.stage as WorkflowStage || currentStage,
         bucketId: doc.bucket_id,
         filePath: doc.file_path,
-        url: supabase.storage.from('documents').getPublicUrl(doc.file_path).data.publicUrl,
+        url: doc.url || supabase.storage.from('documents').getPublicUrl(doc.file_path).data.publicUrl,
         // Add required database fields
         name: doc.name,
         type: doc.type,
@@ -368,6 +376,7 @@ export async function loadRequisitions(): Promise<Requisition[]> {
         ceoComments: req.ceo_comments,
         paymentComments: req.payment_comments,
         storekeeperComments: req.storekeeper_comments,
+        createdBy: req.created_by,
         items: itemsWithDeliveries.map(item => ({
           id: item.id,
           requisitionId: item.requisition_id,
@@ -395,6 +404,7 @@ export async function loadRequisitions(): Promise<Requisition[]> {
           quantityReceived: item.quantity_received,
           qualityCheck: item.quality_check,
           deliveryNotes: item.delivery_notes,
+          createdBy: item.created_by,
           deliveryRecords: item.deliveryRecords.map(record => ({
             id: record.id,
             requisitionItemId: record.requisition_item_id,
