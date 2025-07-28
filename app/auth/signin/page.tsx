@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -22,7 +22,7 @@ const signInSchema = z.object({
 
 type SignInForm = z.infer<typeof signInSchema>
 
-export default function SignInPage() {
+function SignInForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const { signIn, loading, error, clearError } = useAuth()
@@ -116,15 +116,6 @@ export default function SignInPage() {
           )}
         </div>
 
-        <div className="flex items-center justify-between">
-          <Link
-            href="/auth/forgot-password"
-            className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
-          >
-            Forgot password?
-          </Link>
-        </div>
-
         <Button
           type="submit"
           className="w-full"
@@ -140,8 +131,15 @@ export default function SignInPage() {
           )}
         </Button>
 
-        <div className="text-center">
-          <p className="text-sm text-gray-600">
+        <div className="text-center space-y-2">
+          <Link
+            href="/auth/forgot-password"
+            className="text-blue-600 hover:text-blue-800 hover:underline text-sm"
+          >
+            Forgot your password?
+          </Link>
+          
+          <div className="text-sm text-gray-600">
             Don't have an account?{' '}
             <Link
               href="/auth/signup"
@@ -149,9 +147,26 @@ export default function SignInPage() {
             >
               Sign up
             </Link>
-          </p>
+          </div>
         </div>
       </form>
     </AuthLayout>
+  )
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <AuthLayout
+        title="Sign In"
+        subtitle="Loading..."
+      >
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </AuthLayout>
+    }>
+      <SignInForm />
+    </Suspense>
   )
 } 

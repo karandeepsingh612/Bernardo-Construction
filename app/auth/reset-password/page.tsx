@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -25,7 +25,7 @@ const resetPasswordSchema = z.object({
 
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -176,5 +176,22 @@ export default function ResetPasswordPage() {
         </div>
       </form>
     </AuthLayout>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <AuthLayout
+        title="Reset Password"
+        subtitle="Loading..."
+      >
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </AuthLayout>
+    }>
+      <ResetPasswordForm />
+    </Suspense>
   )
 } 
