@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import type { Requisition, RequisitionItem, UserRole } from "@/types"
-import { saveRequisition, generateRequisitionNumber } from "@/lib/requisitionService"
+import { saveRequisition, generateRequisitionNumber, getLocalDateString } from "@/lib/requisitionService"
 import { RoleSelector } from "@/components/role-selector"
 import { MaterialItemsTable } from "@/components/material-items-table"
 import { Button } from "@/components/ui/button"
@@ -27,7 +27,7 @@ export default function NewRequisitionPage() {
     id: uuidv4(),
     requisitionNumber: "",
     status: "draft",
-    createdDate: new Date().toISOString().split("T")[0],
+    createdDate: new Date().toISOString(),
     createdTime: new Date().toLocaleTimeString(),
     lastModified: new Date().toISOString(),
     currentStage: "resident",

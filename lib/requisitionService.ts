@@ -96,9 +96,9 @@ export async function saveRequisition(requisition: Requisition, userName?: strin
     if (!requisition.id) {
       requisition.id = uuidv4();
       
-      // For new requisitions, set created date in UTC
+      // For new requisitions, set created date and time
       const now = new Date();
-      requisition.createdDate = now.toISOString().split('T')[0];
+      requisition.createdDate = now.toISOString(); // Store full timestamp
       requisition.createdTime = now.toLocaleTimeString();
     }
 
@@ -113,7 +113,7 @@ export async function saveRequisition(requisition: Requisition, userName?: strin
         project_id: requisition.projectId,
         project_name: requisition.projectName,
         week: requisition.week,
-        created_date: requisition.createdDate,
+        created_date: requisition.createdDate, // This is now a full ISO timestamp
         created_time: requisition.createdTime,
         last_modified: new Date().toISOString(),
         resident_complete: requisition.residentComplete,
@@ -435,4 +435,13 @@ export function generateRequisitionNumber(): string {
   const day = String(now.getDate()).padStart(2, "0");
   const timestamp = now.getTime();
   return `REQ-${year}-${month}-${day}-${timestamp.toString().slice(-3)}`;
+}
+
+// Helper function to get local date string (YYYY-MM-DD) without timezone conversion
+export function getLocalDateString(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 } 

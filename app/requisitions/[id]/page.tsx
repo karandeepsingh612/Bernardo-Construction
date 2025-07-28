@@ -30,7 +30,7 @@ export default function RequisitionDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [requisition, setRequisition] = useState<Requisition | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -42,8 +42,8 @@ export default function RequisitionDetailPage() {
   const [savedForLaterExpanded, setSavedForLaterExpanded] = useState(false)
   const [week, setWeek] = useState<string>(requisition?.week || "")
 
-    // Get user role from authenticated user
-  const userRole = user?.role as UserRole
+  // Get user role from authenticated user
+  const userRole = user?.role as UserRole | undefined
 
   // Helper functions for role display
   const getRoleDisplayName = (role: UserRole): string => {
@@ -99,24 +99,27 @@ export default function RequisitionDetailPage() {
   }, [requisition?.week])
 
   useEffect(() => {
-    // Load requisition
-    loadRequisition(params.id as string)
-      .then(data => {
-        if (data) {
-          setRequisition(data)
-    }
-    setLoading(false)
-      })
-      .catch(error => {
-        console.error('Failed to load requisition:', error)
-        toast({
-          title: "Error",
-          description: "Failed to load requisition",
-          variant: "destructive",
+    // Only load requisition if auth is not loading and we have a user
+    if (!authLoading && user) {
+      // Load requisition
+      loadRequisition(params.id as string)
+        .then(data => {
+          if (data) {
+            setRequisition(data)
+          }
+          setLoading(false)
         })
-        setLoading(false)
-      })
-  }, [params.id])
+        .catch(error => {
+          console.error('Failed to load requisition:', error)
+          toast({
+            title: "Error",
+            description: "Failed to load requisition",
+            variant: "destructive",
+          })
+          setLoading(false)
+        })
+    }
+  }, [params.id, authLoading, user])
 
   const handleSave = async () => {
     if (!requisition) return
@@ -330,18 +333,28 @@ export default function RequisitionDetailPage() {
     }
   }
 
-  // Show loading state while user data is being fetched
+
+
+  // Show loading while auth is initializing
+  if (authLoading) {
+    return (
+      <div className="container mx-auto py-6">
+        <Card>
+          <CardContent className="py-12 text-center">
+            <div className="text-gray-500">Loading authentication...</div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Show loading if no user (not authenticated)
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-md mx-auto">
-          <CardHeader>
-            <CardTitle>Loading...</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
+      <div className="container mx-auto py-6">
+        <Card>
+          <CardContent className="py-12 text-center">
+            <div className="text-gray-500">Please sign in to view this requisition</div>
           </CardContent>
         </Card>
       </div>
