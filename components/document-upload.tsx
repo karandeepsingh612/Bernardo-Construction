@@ -700,7 +700,7 @@ export function DocumentUpload({
 
       {/* Upload Modal */}
       <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Upload Document</DialogTitle>
           </DialogHeader>
@@ -727,7 +727,7 @@ export function DocumentUpload({
             <div>
               <Label htmlFor="file-upload">Select File *</Label>
               <div className="relative mt-1">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-2">
                   <Button
                     type="button"
                     variant="outline"
@@ -739,9 +739,14 @@ export function DocumentUpload({
                     Choose File
                   </Button>
                   {selectedFile && (
-                    <span className="text-sm text-gray-600 truncate flex-1">
-                      {selectedFile.name}
-                    </span>
+                    <div className="p-2 bg-gray-50 rounded-md">
+                      <p className="text-sm text-gray-600 break-all">
+                        {selectedFile.name}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {formatFileSize(selectedFile.size)}
+                      </p>
+                    </div>
                   )}
                 </div>
               <Input
@@ -793,13 +798,14 @@ export function DocumentUpload({
               </p>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsUploadModalOpen(false)} disabled={isUploading}>
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={() => setIsUploadModalOpen(false)} disabled={isUploading} className="flex-1">
               Cancel
             </Button>
             <Button 
               onClick={handleUpload} 
               disabled={!selectedFile || !selectedDocumentType || isUploading}
+              className="flex-1"
             >
               {isUploading ? (
                 <>
