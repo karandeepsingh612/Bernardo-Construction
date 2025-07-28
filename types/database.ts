@@ -7,6 +7,20 @@ export type DeliveryStatus = 'PENDING' | 'PARTIAL' | 'COMPLETE' | 'REJECTED';
 export type Database = {
   public: {
     Tables: {
+      user_profiles: {
+        Row: {
+          id: string;
+          email: string;
+          full_name: string;
+          role: 'resident' | 'procurement' | 'treasury' | 'ceo' | 'storekeeper';
+          can_manage_users: boolean | null;
+          is_active: boolean | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: Omit<Tables['user_profiles']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Tables['user_profiles']['Row']>;
+      };
       catalog: {
         Row: {
           id: string;

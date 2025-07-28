@@ -1,4 +1,60 @@
 import type { WorkflowStage, Requisition, DeliveryRecord, DeliveryStatus } from "@/types"
+import type { AuthUser } from '@/types/auth'
+
+export type UserRole = 'resident' | 'procurement' | 'treasury' | 'ceo' | 'storekeeper'
+
+export const ROLE_PERMISSIONS = {
+  resident: {
+    canManageUsers: false,
+    canViewAllProfiles: false,
+    canManageCatalog: false,
+  },
+  procurement: {
+    canManageUsers: true,
+    canViewAllProfiles: true,
+    canManageCatalog: true,
+  },
+  treasury: {
+    canManageUsers: true,
+    canViewAllProfiles: true,
+    canManageCatalog: false,
+  },
+  ceo: {
+    canManageUsers: true,
+    canViewAllProfiles: true,
+    canManageCatalog: true,
+  },
+  storekeeper: {
+    canManageUsers: false,
+    canViewAllProfiles: false,
+    canManageCatalog: true,
+  },
+} as const
+
+export function canManageUsers(user: AuthUser | null): boolean {
+  if (!user) return false
+  return user.canManageUsers || false
+}
+
+export function canViewAllProfiles(user: AuthUser | null): boolean {
+  if (!user) return false
+  const role = user.role as UserRole
+  return ROLE_PERMISSIONS[role]?.canViewAllProfiles || false
+}
+
+export function canManageCatalog(user: AuthUser | null): boolean {
+  if (!user) return false
+  const role = user.role as UserRole
+  return ROLE_PERMISSIONS[role]?.canManageCatalog || false
+}
+
+export function isAdmin(user: AuthUser | null): boolean {
+  return canManageUsers(user)
+}
+
+export function getRoleDisplayName(role: UserRole): string {
+  return role.charAt(0).toUpperCase() + role.slice(1)
+}
 
 export function getNextStage(currentStage: WorkflowStage): WorkflowStage | null {
   const stages: WorkflowStage[] = ["resident", "procurement", "treasury", "ceo", "payment", "storekeeper"]
