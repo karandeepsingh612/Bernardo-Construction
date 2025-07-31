@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Upload, FileText, Download, Trash2, Eye, ChevronDown, ChevronRight, Loader2 } from "lucide-react"
-import { Document as PDFDocument, Page as PDFPage } from 'react-pdf';
 import dynamic from 'next/dynamic';
 import { supabase } from "@/lib/supabaseClient"
 import { v4 as uuidv4 } from 'uuid';
@@ -19,9 +18,6 @@ import { useToast } from "@/components/ui/use-toast"
 import { pdfjs } from 'react-pdf';
 import imageCompression from 'browser-image-compression';
 import decode from 'heic-decode';
-
-// Set up PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 // Move PdfPreview import inside the preview modal
 const PdfPreview = dynamic(() => import('./PdfPreview'), { 
@@ -66,6 +62,19 @@ export function DocumentUpload({
   const [previewFilename, setPreviewFilename] = useState<string>('');
   const [previewDoc, setPreviewDoc] = useState<Document | null>(null);
   const [heicPendingConversion, setHeicPendingConversion] = useState(false);
+
+  // Configure PDF.js worker only on client side
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        console.log('Configuring PDF.js worker in DocumentUpload...');
+        pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+        console.log('PDF.js worker configured successfully in DocumentUpload');
+      } catch (error) {
+        console.error('Failed to configure PDF.js worker in DocumentUpload:', error);
+      }
+    }
+  }, []);
 
   // Reset documentToView when closing the modal
   useEffect(() => {

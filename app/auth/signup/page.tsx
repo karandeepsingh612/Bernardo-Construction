@@ -49,7 +49,7 @@ export default function SignUpPage() {
       clearError()
       await signUp(data)
       // After successful signup, redirect to signin or show success message
-      router.push('/auth/signin?message=Please check your email to confirm your account')
+      router.push('/auth/signin?message=Please check your email to confirm your account. If you don\'t see it, please check your spam or junk folder.')
     } catch (error) {
       // Error is handled by the auth context
       console.error('Sign up error:', error)

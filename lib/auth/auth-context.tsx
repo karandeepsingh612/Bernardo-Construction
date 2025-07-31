@@ -11,17 +11,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({
     user: null,
     session: null,
-    loading: false,
+    loading: true, // Start with loading true
     error: null,
   })
 
   useEffect(() => {
     // Initialize auth state
     const initializeAuth = async () => {
+      console.log('Initializing auth state...')
+      
+      // Keep loading true until we're done
       setState(prev => ({ ...prev, loading: true }))
+      
       try {
-        const session = await AuthService.getCurrentSession()
+        // Try to restore session first
+        const session = await AuthService.restoreSession()
+        console.log('Current session:', session ? 'Found' : 'Not found')
+        
         if (session?.user) {
+          console.log('User found in session:', session.user.id)
           // Fetch user profile data from user_profiles table
           const { data: profileData, error: profileError } = await supabase
             .from('user_profiles')
@@ -33,8 +41,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.error('Profile fetch error:', profileError)
           }
 
+          console.log('Profile data:', profileData)
+
           // Check if user is active
           if (profileData && !profileData.is_active) {
+            console.log('User is deactivated, signing out...')
             // User is deactivated, sign them out
             await AuthService.signOut()
             setState({
@@ -57,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             updated_at: session.user.updated_at,
           }
 
+          console.log('Setting user state:', user)
           setState({
             user,
             session: {
@@ -69,6 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             error: null,
           })
         } else {
+          console.log('No session found, setting user to null')
           setState({
             user: null,
             session: null,
@@ -77,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           })
         }
       } catch (error) {
+        console.error('Auth initialization error:', error)
         setState(prev => ({
           ...prev,
           loading: false,
@@ -93,73 +107,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('Auth state changed:', event, session)
         
         if (event === 'SIGNED_IN' && session) {
-          // Fetch user profile data from user_profiles table
-          const { data: profileData, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-
-          if (profileError && profileError.code !== 'PGRST116') {
-            console.error('Profile fetch error:', profileError)
-          }
-
-          // Check if user is active
-          if (profileData && !profileData.is_active) {
-            // User is deactivated, sign them out
-            await AuthService.signOut()
-            setState(prev => ({
-              ...prev,
-              user: null,
-              session: null,
-              loading: false,
-              error: 'Your account has been deactivated. Please reach out to the admin to reactivate your account.',
-            }))
-            return
-          }
-
-          const user: AuthUser = {
-            id: session.user.id,
-            email: session.user.email || '',
-            fullName: profileData?.full_name || session.user.user_metadata?.full_name || '',
-            role: profileData?.role || 'resident',
-            canManageUsers: profileData?.can_manage_users || false,
-            isActive: profileData?.is_active ?? true,
-            created_at: session.user.created_at,
-            updated_at: session.user.updated_at,
-          }
+          console.log('User signed in, fetching profile...')
+          setState(prev => ({ ...prev, loading: true }))
           
-          setState(prev => {
-            // Only update if the state is actually different
-            if (prev.user?.id !== user.id) {
-              return {
-                user,
-                session: {
-                  user,
-                  access_token: session.access_token,
-                  refresh_token: session.refresh_token,
-                  expires_at: session.expires_at || 0,
-                },
-                loading: false,
-                error: null,
-              }
+          try {
+            // Fetch user profile data from user_profiles table
+            const { data: profileData, error: profileError } = await supabase
+              .from('user_profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
+
+            if (profileError && profileError.code !== 'PGRST116') {
+              console.error('Profile fetch error:', profileError)
             }
-            return prev
-          })
-        } else if (event === 'SIGNED_OUT') {
-          setState(prev => {
-            // Only update if user was actually signed in
-            if (prev.user !== null) {
-              return {
+
+            // Check if user is active
+            if (profileData && !profileData.is_active) {
+              console.log('User is deactivated, signing out...')
+              // User is deactivated, sign them out
+              await AuthService.signOut()
+              setState(prev => ({
+                ...prev,
                 user: null,
                 session: null,
                 loading: false,
-                error: null,
-              }
+                error: 'Your account has been deactivated. Please reach out to the admin to reactivate your account.',
+              }))
+              return
             }
-            return prev
+
+            const user: AuthUser = {
+              id: session.user.id,
+              email: session.user.email || '',
+              fullName: profileData?.full_name || session.user.user_metadata?.full_name || '',
+              role: profileData?.role || 'resident',
+              canManageUsers: profileData?.can_manage_users || false,
+              isActive: profileData?.is_active ?? true,
+              created_at: session.user.created_at,
+              updated_at: session.user.updated_at,
+            }
+            
+            console.log('Setting user state after sign in:', user)
+            setState({
+              user,
+              session: {
+                user,
+                access_token: session.access_token,
+                refresh_token: session.refresh_token,
+                expires_at: session.expires_at || 0,
+              },
+              loading: false,
+              error: null,
+            })
+          } catch (error) {
+            console.error('Error fetching profile after sign in:', error)
+            setState(prev => ({
+              ...prev,
+              loading: false,
+              error: 'Failed to load user profile',
+            }))
+          }
+        } else if (event === 'SIGNED_OUT') {
+          console.log('User signed out')
+          setState({
+            user: null,
+            session: null,
+            loading: false,
+            error: null,
           })
         } else if (event === 'TOKEN_REFRESHED') {
+          console.log('Token refreshed')
           // Ensure loading is false after token refresh
           setState(prev => ({ ...prev, loading: false }))
         }

@@ -97,13 +97,74 @@ export class AuthService {
   }
 
   static async getCurrentSession() {
-    const { data: { session }, error } = await supabase.auth.getSession()
+    console.log('AuthService.getCurrentSession - Getting session...')
     
-    if (error) {
-      throw new Error(error.message)
-    }
+    try {
+      // First try to get the session
+      const { data: { session }, error } = await supabase.auth.getSession()
+      
+      if (error) {
+        console.error('AuthService.getCurrentSession - Error:', error)
+        throw new Error(error.message)
+      }
 
-    return session
+      console.log('AuthService.getCurrentSession - Session:', session ? 'Found' : 'Not found')
+      if (session) {
+        console.log('AuthService.getCurrentSession - User ID:', session.user.id)
+        
+        // Check if session is expired and refresh if needed
+        if (session.expires_at && session.expires_at * 1000 < Date.now()) {
+          console.log('AuthService.getCurrentSession - Session expired, refreshing...')
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+          
+          if (refreshError) {
+            console.error('AuthService.getCurrentSession - Refresh error:', refreshError)
+            throw new Error(refreshError.message)
+          }
+          
+          console.log('AuthService.getCurrentSession - Session refreshed successfully')
+          return refreshData.session
+        }
+      }
+      
+      return session
+    } catch (error) {
+      console.error('AuthService.getCurrentSession - Unexpected error:', error)
+      throw error
+    }
+  }
+
+  static async restoreSession() {
+    console.log('AuthService.restoreSession - Attempting to restore session...')
+    
+    try {
+      // Check if we have a stored session
+      const hasStoredSession = this.checkSessionPersistence()
+      console.log('AuthService.restoreSession - Has stored session:', hasStoredSession)
+      
+      if (!hasStoredSession) {
+        console.log('AuthService.restoreSession - No stored session found')
+        return null
+      }
+      
+      // Try to get the current session
+      const session = await this.getCurrentSession()
+      console.log('AuthService.restoreSession - Session restored:', session ? 'Success' : 'Failed')
+      
+      return session
+    } catch (error) {
+      console.error('AuthService.restoreSession - Error restoring session:', error)
+      return null
+    }
+  }
+
+  static checkSessionPersistence() {
+    if (typeof window !== 'undefined') {
+      const storedSession = localStorage.getItem('dinamiq-auth')
+      console.log('AuthService.checkSessionPersistence - Stored session:', storedSession ? 'Found' : 'Not found')
+      return !!storedSession
+    }
+    return false
   }
 
   static onAuthStateChange(callback: (event: string, session: any) => void) {

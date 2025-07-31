@@ -26,6 +26,7 @@ import { DocumentUpload } from "@/components/document-upload"
 import { DatePicker } from "@/components/date-picker"
 import { useAuth } from "@/lib/auth/auth-context"
 import { ProtectedRoute } from "@/components/auth/protected-route"
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 
 function RequisitionDetailPageContent() {
   const params = useParams()
@@ -100,12 +101,16 @@ function RequisitionDetailPageContent() {
   }, [requisition?.week])
 
   useEffect(() => {
+    console.log('RequisitionDetailPage - Auth state:', { authLoading, user: user?.id })
+    
     // Only load requisition if auth is not loading and we have a user
     if (!authLoading && user) {
+      console.log('RequisitionDetailPage - Loading requisition for ID:', params.id)
       // Load requisition
       loadRequisition(params.id as string)
         .then(data => {
           if (data) {
+            console.log('RequisitionDetailPage - Requisition loaded successfully')
             setRequisition(data)
           }
           setLoading(false)
@@ -119,6 +124,10 @@ function RequisitionDetailPageContent() {
           })
           setLoading(false)
         })
+    } else if (!authLoading && !user) {
+      console.log('RequisitionDetailPage - No user found, not loading requisition')
+    } else if (authLoading) {
+      console.log('RequisitionDetailPage - Auth still loading, waiting...')
     }
   }, [params.id, authLoading, user])
 
@@ -336,20 +345,12 @@ function RequisitionDetailPageContent() {
 
 
 
-  // Show loading while auth is initializing
-  if (authLoading) {
-    return (
-      <div className="container mx-auto py-6">
-        <Card>
-          <CardContent className="py-12 text-center">
-            <div className="text-gray-500">Loading authentication...</div>
-          </CardContent>
-        </Card>
-      </div>
-    )
+  // Show loading skeleton while auth is loading or requisition is loading
+  if (authLoading || loading) {
+    return <LoadingSkeleton type="page" />
   }
 
-  // Show loading if no user (not authenticated)
+  // Show error if no user (this should not happen due to ProtectedRoute, but just in case)
   if (!user) {
     return (
       <div className="container mx-auto py-6">
@@ -375,18 +376,6 @@ function RequisitionDetailPageContent() {
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>Unable to determine your role. Please contact support.</AlertDescription>
             </Alert>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  if (loading) {
-    return (
-      <div className="container mx-auto py-6">
-        <Card>
-          <CardContent className="py-12 text-center">
-            <div className="text-gray-500">Loading requisition...</div>
           </CardContent>
         </Card>
       </div>
@@ -478,7 +467,7 @@ function RequisitionDetailPageContent() {
                     })()}
                   </div>
                 </div>
-                                <div className="flex items-center gap-2 h-9 mt-4">
+                <div className="flex items-center gap-2 h-9 mt-4">
                   <Briefcase className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <div>
                     <span className="font-medium">Project Name:</span>{" "}

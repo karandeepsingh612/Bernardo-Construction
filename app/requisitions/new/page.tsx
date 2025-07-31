@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast"
 import { v4 as uuidv4 } from 'uuid'
 import { useAuth } from "@/lib/auth/auth-context"
 import { ProtectedRoute } from "@/components/auth/protected-route"
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 
 function NewRequisitionPageContent() {
   const router = useRouter()
@@ -132,20 +133,7 @@ function NewRequisitionPageContent() {
 
   // Show loading state while user data is being fetched
   if (!user) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-md mx-auto">
-          <CardHeader>
-            <CardTitle>Loading...</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
+    return <LoadingSkeleton type="page" />
   }
 
   // Show error if user doesn't have a role
@@ -204,7 +192,20 @@ function NewRequisitionPageContent() {
             <p className="text-gray-600 mt-2">Requisition Number: {requisition.requisitionNumber}</p>
           </div>
         </div>
-        <RoleSelector userRole={userRole} />
+        <div className="flex items-center gap-4">
+          <div className="flex gap-2">
+            {/* Hide Save as Draft button for now */}
+            {/* <Button variant="outline" onClick={() => handleSave(true)} disabled={isSaving} size="sm">
+              <Save className="h-4 w-4 mr-2" />
+              {isSaving ? "Saving..." : "Save as Draft"}
+            </Button> */}
+            <Button onClick={() => handleSave(false)} disabled={isSaving} size="sm">
+              <Save className="h-4 w-4 mr-2" />
+              {isSaving ? "Creating..." : "Create Requisition"}
+            </Button>
+          </div>
+          <RoleSelector userRole={userRole} />
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -270,17 +271,14 @@ function NewRequisitionPageContent() {
           </CardContent>
         </Card>
 
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-4">
-          <Button variant="outline" onClick={() => handleSave(true)} disabled={isSaving}>
-            <Save className="h-4 w-4 mr-2" />
-            {isSaving ? "Saving..." : "Save as Draft"}
-          </Button>
-          <Button onClick={() => handleSave(false)} disabled={isSaving}>
-            <Save className="h-4 w-4 mr-2" />
+        {/* Bottom Action Buttons */}
+        <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+          <Button onClick={() => handleSave(false)} disabled={isSaving} size="lg">
+            <Save className="h-5 w-5 mr-2" />
             {isSaving ? "Creating..." : "Create Requisition"}
           </Button>
         </div>
+
       </div>
     </div>
   )
