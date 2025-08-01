@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Eye, ArrowUpDown, LayoutGrid, LayoutList, RefreshCw } from "lucide-react"
+import { Eye, ArrowUpDown, LayoutGrid, LayoutList, RefreshCw, Plus } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { STATUS_LABELS, STAGE_LABELS } from "@/types"
@@ -44,9 +44,22 @@ function RequisitionsPageContent() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [page, setPage] = useState(1)
   const [viewMode, setViewMode] = useState<'card' | 'table'>('card')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [stageFilter, setStageFilter] = useState('all')
+  const [searchTerm, setSearchTerm] = useState('')
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1)
+  }, [statusFilter, stageFilter, searchTerm])
 
   // Get user role from authenticated user
   const userRole = user?.role as UserRole
+
+  useEffect(() => {
+    // Scroll to top when component mounts
+    window.scrollTo(0, 0)
+  }, [])
 
   useEffect(() => {
     // Only load if user is available
@@ -98,8 +111,36 @@ function RequisitionsPageContent() {
     }
   }
 
-  const totalPages = Math.ceil(requisitions.length / PAGE_SIZE)
-  const paginatedRequisitions = requisitions.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  // Filter requisitions based on current filters
+  const filteredRequisitions = requisitions.filter(requisition => {
+    // Status filter
+    if (statusFilter !== 'all' && requisition.status !== statusFilter) {
+      return false
+    }
+    
+    // Stage filter
+    if (stageFilter !== 'all' && requisition.currentStage !== stageFilter) {
+      return false
+    }
+    
+    // Search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase()
+      return (
+        requisition.requisitionNumber.toLowerCase().includes(searchLower) ||
+        requisition.projectName.toLowerCase().includes(searchLower) ||
+        requisition.items.some(item => 
+          item.description.toLowerCase().includes(searchLower) ||
+          item.classification.toLowerCase().includes(searchLower)
+        )
+      )
+    }
+    
+    return true
+  })
+
+  const totalPages = Math.ceil(filteredRequisitions.length / PAGE_SIZE)
+  const paginatedRequisitions = filteredRequisitions.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -176,6 +217,17 @@ function RequisitionsPageContent() {
           >
             <LayoutList className={cn("h-4 w-4", viewMode === 'table' ? "text-white" : "text-gray-600")} />
           </Button>
+          <div className="w-px h-6 bg-gray-300 mx-2"></div>
+          <Link href="/requisitions/new">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 px-3 text-sm bg-white hover:bg-gray-50 border-gray-200 hover:border-blue-300 text-gray-700 hover:text-blue-700 transition-colors"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Requisition
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -187,23 +239,38 @@ function RequisitionsPageContent() {
             <Input
               placeholder="Search requisitions..."
               className="max-w-xs"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Select defaultValue="all">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="All Statuses" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
-                {/* Add status options */}
+                <SelectItem value="DRAFT">Draft</SelectItem>
+                <SelectItem value="pending-resident">Pending Resident</SelectItem>
+                <SelectItem value="pending-procurement">Pending Procurement</SelectItem>
+                <SelectItem value="pending-treasury">Pending Treasury</SelectItem>
+                <SelectItem value="pending-ceo">Pending CEO</SelectItem>
+                <SelectItem value="pending-payment">Pending Payment</SelectItem>
+                <SelectItem value="pending-storekeeper">Pending Storekeeper</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
               </SelectContent>
             </Select>
-            <Select defaultValue="all">
+            <Select value={stageFilter} onValueChange={setStageFilter}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="All Stages" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Stages</SelectItem>
-                {/* Add stage options */}
+                <SelectItem value="resident">Resident</SelectItem>
+                <SelectItem value="procurement">Procurement</SelectItem>
+                <SelectItem value="treasury">Treasury</SelectItem>
+                <SelectItem value="ceo">CEO</SelectItem>
+                <SelectItem value="payment">Payment</SelectItem>
+                <SelectItem value="storekeeper">Storekeeper</SelectItem>
               </SelectContent>
             </Select>
             <Button

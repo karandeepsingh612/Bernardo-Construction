@@ -47,6 +47,11 @@ function RequisitionDetailPageContent() {
   // Get user role from authenticated user
   const userRole = user?.role as UserRole | undefined
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   // Helper functions for role display
   const getRoleDisplayName = (role: UserRole): string => {
     switch (role) {

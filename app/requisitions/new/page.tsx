@@ -55,6 +55,11 @@ function NewRequisitionPageContent() {
   const userRole = user?.role as UserRole
 
   useEffect(() => {
+    // Scroll to top when component mounts
+    window.scrollTo(0, 0)
+  }, [])
+
+  useEffect(() => {
     // Generate requisition number
     setRequisition((prev) => ({
       ...prev,

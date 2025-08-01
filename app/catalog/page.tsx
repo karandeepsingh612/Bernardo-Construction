@@ -50,6 +50,11 @@ function CatalogPageContent() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
+    // Scroll to top when component mounts
+    window.scrollTo(0, 0)
+  }, [])
+
+  useEffect(() => {
     async function fetchData() {
       setLoading(true);
       if (activeTab === 'materials') {
