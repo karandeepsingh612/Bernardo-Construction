@@ -424,8 +424,112 @@ export async function loadRequisitions(): Promise<Requisition[]> {
 }
 
 export async function loadRequisition(id: string): Promise<Requisition | null> {
-  const requisitions = await loadRequisitions();
-  return requisitions.find(req => req.id === id) || null;
+  try {
+    console.log('Loading single requisition:', id)
+    
+    // Single query with joins - much faster than multiple queries
+    const { data: req, error: reqError } = await supabase
+      .from('requisitions')
+      .select(`
+        *,
+        requisition_items (
+          *,
+          delivery_records (*)
+        ),
+        documents (*)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (reqError) throw reqError;
+    if (!req) return null;
+
+    // Transform the data
+    const itemsWithDeliveries = req.requisition_items?.map((item: any) => ({
+      ...item,
+      deliveryRecords: item.delivery_records || []
+    })) || [];
+
+    return {
+      id: req.id,
+      requisitionNumber: req.requisition_number,
+      status: req.status,
+      currentStage: req.current_stage,
+      projectId: req.project_id,
+      projectName: req.project_name,
+      week: req.week,
+      createdDate: req.created_date,
+      createdTime: req.created_time,
+      lastModified: req.last_modified,
+      residentComplete: req.resident_complete,
+      procurementComplete: req.procurement_complete,
+      treasuryComplete: req.treasury_complete,
+      ceoComplete: req.ceo_complete,
+      paymentComplete: req.payment_complete,
+      storekeeperComplete: req.storekeeper_complete,
+      residentComments: req.resident_comments,
+      procurementComments: req.procurement_comments,
+      treasuryComments: req.treasury_comments,
+      ceoComments: req.ceo_comments,
+      paymentComments: req.payment_comments,
+      storekeeperComments: req.storekeeper_comments,
+      createdBy: req.created_by,
+      items: itemsWithDeliveries.map((item: any) => ({
+        id: item.id,
+        requisitionId: item.requisition_id,
+        classification: item.classification,
+        description: item.description,
+        amount: item.amount,
+        unit: item.unit,
+        supplier: item.supplier,
+        supplier_rfc: item.supplier_rfc,
+        priceUnit: item.price_unit,
+        multiplier: item.multiplier,
+        netPrice: item.net_price,
+        subtotal: item.subtotal,
+        total: item.total,
+        approvalStatus: item.approval_status,
+        ceoItemComments: item.ceo_item_comments,
+        paymentStatus: item.payment_status,
+        paymentDate: item.payment_date,
+        paymentAmount: item.payment_amount,
+        paymentMethod: item.payment_method,
+        paymentReference: item.payment_reference,
+        paymentNumber: item.payment_number,
+        deliveryStatus: item.delivery_status,
+        deliveryDate: item.delivery_date,
+        quantityReceived: item.quantity_received,
+        qualityCheck: item.quality_check,
+        deliveryNotes: item.delivery_notes,
+        createdBy: item.created_by,
+        deliveryRecords: item.deliveryRecords.map((record: any) => ({
+          id: record.id,
+          requisitionItemId: record.requisition_item_id,
+          deliveryDate: record.delivery_date,
+          quantity: record.quantity,
+          qualityCheck: record.quality_check,
+          receivedBy: record.received_by || '',
+          deliveryNotes: record.notes,
+        })),
+      })),
+      documents: req.documents ? req.documents.map((doc: any) => ({
+        id: doc.id,
+        fileName: doc.name,
+        filePath: doc.file_path,
+        fileType: doc.type,
+        fileSize: doc.size,
+        uploadDate: doc.uploaded_at || new Date().toISOString(),
+        documentType: doc.type as DocumentType,
+        bucketId: doc.bucket_id,
+        uploadedBy: doc.uploaded_by,
+        stage: doc.stage,
+        url: doc.url,
+      })) : []
+    } as Requisition;
+  } catch (error) {
+    console.error('Error loading requisition:', error)
+    throw error
+  }
 }
 
 export function generateRequisitionNumber(): string {

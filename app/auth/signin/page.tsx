@@ -24,11 +24,25 @@ type SignInForm = z.infer<typeof signInSchema>
 
 function SignInForm() {
   const [showPassword, setShowPassword] = useState(false)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const { signIn, loading, error, clearError } = useAuth()
+  const [successMessage, setSuccessMessage] = useState<string>('')
+  const { signIn, loading, error, user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!loading && !error && user) {
+      console.log('SignInForm: User already authenticated, redirecting to dashboard')
+      const redirectUrl = searchParams.get('redirect')
+      if (redirectUrl) {
+        router.push(decodeURIComponent(redirectUrl))
+      } else {
+        router.push('/')
+      }
+    }
+  }, [loading, error, user, router, searchParams])
+
+  // Handle success message from URL params
   useEffect(() => {
     const message = searchParams.get('message')
     if (message) {
@@ -38,7 +52,7 @@ function SignInForm() {
 
   // Clear errors on mount only
   useEffect(() => {
-    clearError()
+    // clearError() - removed since we simplified auth context
   }, [])
 
   const {
@@ -51,7 +65,7 @@ function SignInForm() {
 
   const onSubmit = async (data: SignInForm) => {
     try {
-      clearError()
+      // clearError() - removed since we simplified auth context
       await signIn(data)
       
       // Check if there's a redirect URL

@@ -65,16 +65,17 @@ export function DocumentUpload({
 
   // Configure PDF.js worker only on client side
   useEffect(() => {
+    // Configure PDF.js worker only on client side
     if (typeof window !== 'undefined') {
-      try {
-        console.log('Configuring PDF.js worker in DocumentUpload...');
-        pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-        console.log('PDF.js worker configured successfully in DocumentUpload');
-      } catch (error) {
-        console.error('Failed to configure PDF.js worker in DocumentUpload:', error);
+      console.log('Configuring PDF.js worker in DocumentUpload...')
+      
+      // Only configure if not already configured
+      if (!pdfjs.GlobalWorkerOptions.workerSrc) {
+        pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
+        console.log('PDF.js worker configured successfully in DocumentUpload')
       }
     }
-  }, []);
+  }, [])
 
   // Reset documentToView when closing the modal
   useEffect(() => {

@@ -42,7 +42,7 @@ function RequisitionDetailPageContent() {
   const [pendingTopCompletion, setPendingTopCompletion] = useState<{ stage: WorkflowStage; comments: string } | null>(null)
   const bottomPanelRef = useRef<HTMLDivElement>(null)
   const [savedForLaterExpanded, setSavedForLaterExpanded] = useState(false)
-  const [week, setWeek] = useState<string>(requisition?.week || "")
+  const [week, setWeek] = useState<string>("")
 
   // Get user role from authenticated user
   const userRole = user?.role as UserRole | undefined
@@ -70,66 +70,38 @@ function RequisitionDetailPageContent() {
     }
   }
 
-  // Add effect to update requisition when week changes
+  // Simple loading logic - like catalog page
   useEffect(() => {
-    if (requisition && week !== requisition.week) {
-      const updatedRequisition = {
-        ...requisition,
-        week,
-        lastModified: new Date().toISOString()
-      }
-      setRequisition(updatedRequisition)
-      
-      // Save to Supabase
-      saveRequisition(updatedRequisition, user?.fullName)
-        .catch(error => {
-          console.error('Failed to save week date:', error)
-          toast({
-            title: "Error",
-            description: "Failed to save week date",
-            variant: "destructive",
-          })
-        })
-    }
-  }, [week, requisition])
-
-  // Also update the initial week state when requisition loads
-  useEffect(() => {
-    if (requisition?.week) {
-      setWeek(requisition.week)
-    }
-  }, [requisition?.week])
-
-  useEffect(() => {
-    console.log('RequisitionDetailPage - Auth state:', { authLoading, user: user?.id })
-    
-    // Only load requisition if auth is not loading and we have a user
-    if (!authLoading && user) {
-      console.log('RequisitionDetailPage - Loading requisition for ID:', params.id)
-      // Load requisition
-      loadRequisition(params.id as string)
-        .then(data => {
+    async function fetchRequisition() {
+      if (!authLoading && user && params.id) {
+        setLoading(true)
+        try {
+          const data = await loadRequisition(params.id as string)
           if (data) {
-            console.log('RequisitionDetailPage - Requisition loaded successfully')
             setRequisition(data)
+            setWeek(data.week || "")
           }
-          setLoading(false)
-        })
-        .catch(error => {
+        } catch (error) {
           console.error('Failed to load requisition:', error)
           toast({
             title: "Error",
             description: "Failed to load requisition",
             variant: "destructive",
           })
+        } finally {
           setLoading(false)
-        })
-    } else if (!authLoading && !user) {
-      console.log('RequisitionDetailPage - No user found, not loading requisition')
-    } else if (authLoading) {
-      console.log('RequisitionDetailPage - Auth still loading, waiting...')
+        }
+      }
     }
+    fetchRequisition()
   }, [params.id, authLoading, user])
+
+  // Update week when requisition changes
+  useEffect(() => {
+    if (requisition?.week) {
+      setWeek(requisition.week)
+    }
+  }, [requisition?.week])
 
   const handleSave = async () => {
     if (!requisition) return
@@ -347,18 +319,13 @@ function RequisitionDetailPageContent() {
 
   // Show loading skeleton while auth is loading or requisition is loading
   if (authLoading || loading) {
-    return <LoadingSkeleton type="page" />
-  }
-
-  // Show error if no user (this should not happen due to ProtectedRoute, but just in case)
-  if (!user) {
     return (
       <div className="container mx-auto py-6">
-        <Card>
-          <CardContent className="py-12 text-center">
-            <div className="text-gray-500">Please sign in to view this requisition</div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center justify-center space-x-2">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="text-gray-600">Loading requisition...</span>
+        </div>
+        <LoadingSkeleton type="page" />
       </div>
     )
   }

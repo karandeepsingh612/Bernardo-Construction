@@ -1,23 +1,22 @@
 'use client'
 
-import React, { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react'
-
-import { AuthLayout } from '@/components/auth/auth-layout'
+import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useAuth } from '@/lib/auth/auth-context'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react'
+import { supabase } from '@/lib/supabaseClient'
+import { AuthLayout } from '@/components/auth/auth-layout'
 
 const resetPasswordSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string().min(1, 'Please confirm your password'),
+  confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -25,11 +24,12 @@ const resetPasswordSchema = z.object({
 
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>
 
-function ResetPasswordForm() {
+export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
-  const { updatePassword, loading, error, clearError } = useAuth()
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -42,25 +42,33 @@ function ResetPasswordForm() {
   })
 
   const onSubmit = async (data: ResetPasswordForm) => {
+    setLoading(true)
+    setError(null)
+    
     try {
-      clearError()
-      await updatePassword(data.password)
-      setIsSuccess(true)
-      // Redirect to sign in after 3 seconds
-      setTimeout(() => {
-        router.push('/auth/signin')
-      }, 3000)
+      // Use Supabase's updateUser directly - it will handle the recovery token from the URL
+      const { error } = await supabase.auth.updateUser({
+        password: data.password,
+      })
+
+      if (error) {
+        throw new Error(error.message)
+      }
+
+      setIsSubmitted(true)
     } catch (error) {
-      // Error is handled by the auth context
       console.error('Password update error:', error)
+      setError(error instanceof Error ? error.message : 'Failed to update password')
+    } finally {
+      setLoading(false)
     }
   }
 
-  if (isSuccess) {
+  if (isSubmitted) {
     return (
       <AuthLayout
-        title="Password Updated"
-        subtitle="Your password has been successfully reset"
+        title="Password Reset Success"
+        subtitle="Your password has been updated"
       >
         <div className="text-center space-y-4">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
@@ -69,21 +77,20 @@ function ResetPasswordForm() {
           
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Success!
+              Password updated successfully!
             </h3>
             <p className="text-gray-600">
-              Your password has been successfully updated. 
-              You will be redirected to the sign in page shortly.
+              Your password has been reset. You can now sign in with your new password.
             </p>
           </div>
 
           <div className="pt-4">
-            <Link
-              href="/auth/signin"
-              className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+            <Button
+              onClick={() => router.push('/auth/signin')}
+              className="w-full"
             >
-              Go to sign in now
-            </Link>
+              Sign In
+            </Button>
           </div>
         </div>
       </AuthLayout>
@@ -123,9 +130,6 @@ function ResetPasswordForm() {
           {errors.password && (
             <p className="text-sm text-red-500">{errors.password.message}</p>
           )}
-          <p className="text-xs text-gray-500">
-            Password must be at least 8 characters long
-          </p>
         </div>
 
         <div className="space-y-2">
@@ -165,33 +169,7 @@ function ResetPasswordForm() {
             'Update Password'
           )}
         </Button>
-
-        <div className="text-center">
-          <Link
-            href="/auth/signin"
-            className="text-blue-600 hover:text-blue-800 hover:underline"
-          >
-            Back to sign in
-          </Link>
-        </div>
       </form>
     </AuthLayout>
-  )
-}
-
-export default function ResetPasswordPage() {
-  return (
-    <Suspense fallback={
-      <AuthLayout
-        title="Reset Password"
-        subtitle="Loading..."
-      >
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        </div>
-      </AuthLayout>
-    }>
-      <ResetPasswordForm />
-    </Suspense>
   )
 } 
