@@ -1138,43 +1138,44 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                 <h4 className="font-medium text-sm text-yellow-600 mb-3">PAYMENT INFORMATION</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
+                    <Label htmlFor="modal-paymentStatus">Payment Status</Label>
+                    <Select
+                      value={editingItem.paymentStatus}
+                      onValueChange={(value) => {
+                        // Auto-generate payment number when status is set to completed
+                        if (value === "completed" && !editingItem.paymentNumber) {
+                          setEditingItem({
+                            ...editingItem,
+                            paymentStatus: value,
+                            paymentNumber: generatePaymentNumber()
+                          });
+                        } else {
+                          updatePaymentStatus(value as PaymentStatus);
+                        }
+                      }}
+                      disabled={!canEditField("paymentStatus")}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="rejected">Rejected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
                     <Label htmlFor="modal-paymentNumber">Payment Number</Label>
                     <Input
                       id="modal-paymentNumber"
                       value={editingItem.paymentNumber}
                       onChange={(e) => updateEditingItem("paymentNumber", e.target.value)}
                       placeholder="e.g., PAY-2024-001"
-                      disabled={!canEditField("paymentNumber")}
+                      disabled={!canEditField("paymentNumber") || editingItem.paymentStatus === "completed"}
+                      className={editingItem.paymentStatus === "completed" ? "bg-gray-100 text-gray-500" : ""}
                     />
                   </div>
-                                      <div>
-                      <Label htmlFor="modal-paymentStatus">Payment Status</Label>
-                      <Select
-                        value={editingItem.paymentStatus}
-                        onValueChange={(value) => {
-                          // Auto-generate payment number when status is set to completed
-                          if (value === "completed" && !editingItem.paymentNumber) {
-                            setEditingItem({
-                              ...editingItem,
-                              paymentStatus: value,
-                              paymentNumber: generatePaymentNumber()
-                            });
-                          } else {
-                            updatePaymentStatus(value as PaymentStatus);
-                          }
-                        }}
-                        disabled={!canEditField("paymentStatus")}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
-                          <SelectItem value="rejected">Rejected</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
                   <div>
                     <Label htmlFor="modal-paymentDate">Payment Date</Label>
                     <Input

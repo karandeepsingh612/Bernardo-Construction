@@ -107,12 +107,20 @@ export async function loadDashboardStats(filters?: DashboardFilters, userRole?: 
       throw itemsError
     }
 
+    // Filter requisition items to only include those from filtered requisitions
+    const filteredRequisitionIds = requisitions.map(req => req.id)
+    const filteredItems = requisitionItems?.filter(item => 
+      filteredRequisitionIds.includes(item.requisition_id)
+    ) || []
+
+    console.log('loadDashboardStats: Filtered to', filteredItems.length, 'requisition items from', requisitionItems?.length || 0, 'total items')
+
     // Calculate financial metrics
     let totalSpent = 0
     let totalSubmitted = 0
     let totalApproved = 0
 
-    requisitionItems?.forEach(item => {
+    filteredItems.forEach(item => {
       const itemTotal = item.total || 0
       
       // Total Submitted: Sum of all item totals
