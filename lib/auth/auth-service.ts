@@ -64,6 +64,35 @@ export class AuthService {
     if (error) {
       throw new Error(error.message)
     }
+
+    // Clear all local storage and session storage
+    if (typeof window !== 'undefined') {
+      try {
+        // Clear localStorage
+        localStorage.clear()
+        
+        // Clear sessionStorage
+        sessionStorage.clear()
+        
+        // Clear any specific keys we might have set
+        localStorage.removeItem('dinamiq-auth')
+        localStorage.removeItem('user_role')
+        
+        // Clear any cookies that might be set
+        document.cookie.split(";").forEach(function(c) { 
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+        
+        console.log('AuthService.signOut - Cleared all local storage, session storage, and cookies')
+        
+        // Redirect to sign-in page to ensure complete logout
+        window.location.href = '/auth/signin'
+      } catch (storageError) {
+        console.error('AuthService.signOut - Error clearing storage:', storageError)
+        // Still redirect even if storage clearing fails
+        window.location.href = '/auth/signin'
+      }
+    }
   }
 
   static async resetPassword(email: string) {

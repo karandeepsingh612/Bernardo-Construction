@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { loadRequisitions } from "@/lib/requisitionService"
 import type { Requisition, UserRole } from "@/types"
 import { Card, CardContent } from "@/components/ui/card"
@@ -53,35 +53,39 @@ function RequisitionsPageContent() {
     setPage(1)
   }, [statusFilter, stageFilter, searchTerm])
 
-  // Get user role from authenticated user
-  const userRole = user?.role as UserRole
+
 
   useEffect(() => {
     // Scroll to top when component mounts
     window.scrollTo(0, 0)
   }, [])
 
-  useEffect(() => {
-    // Only load if user is available
+  // Load all requisitions - no user role filtering needed
+  const loadRequisitionsData = useCallback(async () => {
     if (!user) {
       console.log('User not available, skipping requisitions load')
       return
     }
 
-    console.log('Loading requisitions for user:', user.id, 'role:', user.role)
+    console.log('Loading all requisitions for logged-in user')
     setLoading(true)
-    loadRequisitions()
-      .then(data => {
-        console.log('Requisitions loaded successfully:', data.length, 'items')
-        const sortedData = sortRequisitionsByDate(data, sortOrder)
-        setRequisitions(sortedData)
-        setLoading(false)
-      })
-      .catch(error => {
-        console.error('Failed to load requisitions:', error)
-        setLoading(false)
-      })
-  }, [user, sortOrder]) // Add user dependency and keep sortOrder
+    try {
+      const data = await loadRequisitions()
+      console.log('Requisitions loaded successfully:', data.length, 'items')
+      const sortedData = sortRequisitionsByDate(data, sortOrder)
+      setRequisitions(sortedData)
+    } catch (error) {
+      console.error('Failed to load requisitions:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [sortOrder]) // Only depend on sortOrder, not user
+
+
+
+  useEffect(() => {
+    loadRequisitionsData()
+  }, [loadRequisitionsData])
 
   const sortRequisitionsByDate = (data: Requisition[], order: 'asc' | 'desc') => {
     return [...data].sort((a, b) => {

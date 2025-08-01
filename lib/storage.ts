@@ -16,3 +16,14 @@ export function loadUserRole(): string | null {
     return null
   }
 }
+
+export function clearUserData(): void {
+  try {
+    localStorage.removeItem(ROLE_KEY)
+    localStorage.removeItem('dinamiq-auth')
+    sessionStorage.clear()
+    console.log("Storage utility - Cleared all user data")
+  } catch (error) {
+    console.error("Failed to clear user data:", error)
+  }
+}
