@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Eye, ArrowUpDown, LayoutGrid, LayoutList } from "lucide-react"
+import { Eye, ArrowUpDown, LayoutGrid, LayoutList, RefreshCw } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { STATUS_LABELS, STAGE_LABELS } from "@/types"
@@ -49,9 +49,17 @@ function RequisitionsPageContent() {
   const userRole = user?.role as UserRole
 
   useEffect(() => {
+    // Only load if user is available
+    if (!user) {
+      console.log('User not available, skipping requisitions load')
+      return
+    }
 
+    console.log('Loading requisitions for user:', user.id, 'role:', user.role)
+    setLoading(true)
     loadRequisitions()
       .then(data => {
+        console.log('Requisitions loaded successfully:', data.length, 'items')
         const sortedData = sortRequisitionsByDate(data, sortOrder)
         setRequisitions(sortedData)
         setLoading(false)
@@ -60,7 +68,7 @@ function RequisitionsPageContent() {
         console.error('Failed to load requisitions:', error)
         setLoading(false)
       })
-  }, [sortOrder])
+  }, [user, sortOrder]) // Add user dependency and keep sortOrder
 
   const sortRequisitionsByDate = (data: Requisition[], order: 'asc' | 'desc') => {
     return [...data].sort((a, b) => {
@@ -72,6 +80,22 @@ function RequisitionsPageContent() {
 
   const toggleSortOrder = () => {
     setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')
+  }
+
+  const refreshRequisitions = async () => {
+    if (!user) return
+    
+    setLoading(true)
+    try {
+      const data = await loadRequisitions()
+      const sortedData = sortRequisitionsByDate(data, sortOrder)
+      setRequisitions(sortedData)
+      console.log('Requisitions refreshed:', data.length, 'items loaded')
+    } catch (error) {
+      console.error('Failed to refresh requisitions:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const totalPages = Math.ceil(requisitions.length / PAGE_SIZE)
@@ -120,6 +144,16 @@ function RequisitionsPageContent() {
           <p className="text-gray-500 text-sm mt-1">Manage and track all material requisitions</p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={refreshRequisitions}
+            disabled={loading}
+            className="h-9 w-9"
+            title="Refresh requisitions"
+          >
+            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+          </Button>
           <Button
             variant={viewMode === 'card' ? 'default' : 'outline'}
             size="icon"

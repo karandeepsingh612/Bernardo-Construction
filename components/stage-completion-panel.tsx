@@ -87,6 +87,12 @@ export function StageCompletionPanel({ requisition, userRole, onComplete }: Stag
         break
       case "procurement":
         requisition.items.forEach((item, index) => {
+          // Basic information (since procurement can add this)
+          if (!item.description) errors.push(`Item ${index + 1}: Description is required`)
+          if (!item.classification) errors.push(`Item ${index + 1}: Classification is required`)
+          if (!item.amount || item.amount <= 0) errors.push(`Item ${index + 1}: Amount must be greater than 0`)
+          if (!item.unit) errors.push(`Item ${index + 1}: Unit is required`)
+          // Procurement-specific information
           if (!item.supplier) errors.push(`Item ${index + 1}: Supplier is required`)
           if (!item.priceUnit || item.priceUnit <= 0)
             errors.push(`Item ${index + 1}: Price per unit must be greater than 0`)
@@ -109,7 +115,7 @@ export function StageCompletionPanel({ requisition, userRole, onComplete }: Stag
         break
       case "storekeeper":
         requisition.items.forEach((item, index) => {
-          if (!item.deliveryStatus || item.deliveryStatus !== "complete") {
+          if (!item.deliveryStatus || item.deliveryStatus !== "Complete") {
             errors.push(`Item ${index + 1}: Delivery must be fully completed before this stage can be completed.`)
           }
         })

@@ -86,7 +86,7 @@ function NewRequisitionPageContent() {
       const updatedRequisition = {
         ...requisition,
         lastModified: new Date().toISOString(),
-        status: isDraft ? "draft" as const : "pending-procurement" as const,
+        status: isDraft ? "draft" as const : "pending-resident" as const,
       }
 
       console.log('Saving requisition:', JSON.stringify(updatedRequisition, null, 2))
@@ -155,8 +155,8 @@ function NewRequisitionPageContent() {
     )
   }
 
-  // Only allow resident and procurement roles to create requisitions
-  if (userRole !== 'resident' && userRole !== 'procurement') {
+  // Allow resident, procurement, and CEO roles to create requisitions
+  if (userRole !== 'resident' && userRole !== 'procurement' && userRole !== 'ceo') {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-md mx-auto">
@@ -166,7 +166,7 @@ function NewRequisitionPageContent() {
           <CardContent>
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>Only Resident or Procurement roles can create a requisition.</AlertDescription>
+              <AlertDescription>Only Resident, Procurement, or CEO roles can create a requisition.</AlertDescription>
             </Alert>
             <div className="mt-4">
               <RoleSelector userRole={userRole} />

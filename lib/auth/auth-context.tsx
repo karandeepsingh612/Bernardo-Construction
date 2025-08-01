@@ -7,6 +7,7 @@ import { AuthUser, AuthState } from '@/types/auth'
 
 interface AuthContextType extends AuthState {
   signIn: (credentials: { email: string; password: string }) => Promise<void>
+  signUp: (credentials: { email: string; password: string; fullName: string; confirmPassword: string }) => Promise<void>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
   updatePassword: (password: string) => Promise<void>
@@ -42,6 +43,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ...prev,
         loading: false,
         error: error instanceof Error ? error.message : 'Sign in failed',
+      }))
+      throw error
+    }
+  }
+
+  const signUp = async (credentials: { email: string; password: string; fullName: string; confirmPassword: string }) => {
+    setState(prev => ({ ...prev, loading: true, error: null }))
+    
+    try {
+      // Extract only the fields needed by the service
+      const { email, password, fullName, confirmPassword } = credentials
+      await AuthService.signUp({ email, password, fullName, confirmPassword })
+      setState(prev => ({ ...prev, loading: false }))
+    } catch (error) {
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: error instanceof Error ? error.message : 'Sign up failed',
       }))
       throw error
     }
@@ -305,6 +324,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value: AuthContextType = {
     ...state,
     signIn,
+    signUp,
     signOut,
     resetPassword,
     updatePassword,

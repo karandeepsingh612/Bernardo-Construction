@@ -1,4 +1,4 @@
-export type RequisitionStatus = 'draft' | 'pending-procurement' | 'pending-treasury' | 'pending-ceo' | 'pending-payment' | 'pending-storekeeper' | 'completed' | 'rejected';
+export type RequisitionStatus = 'draft' | 'pending-resident' | 'pending-procurement' | 'pending-treasury' | 'pending-ceo' | 'pending-payment' | 'pending-storekeeper' | 'completed' | 'rejected';
 export type WorkflowStage = 'resident' | 'procurement' | 'treasury' | 'ceo' | 'payment' | 'storekeeper';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'partial' | 'Save for Later';
 export type PaymentStatus = 'pending' | 'paid' | 'rejected' | 'completed';
@@ -144,6 +144,7 @@ export type UserRole = WorkflowStage;
 
 export const STATUS_LABELS: Record<RequisitionStatus, string> = {
   'draft': 'Draft',
+  'pending-resident': 'Pending Resident',
   'pending-procurement': 'Pending Procurement',
   'pending-treasury': 'Pending Treasury',
   'pending-ceo': 'Pending CEO',

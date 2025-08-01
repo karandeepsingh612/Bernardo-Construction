@@ -278,13 +278,24 @@ export async function saveRequisition(requisition: Requisition, userName?: strin
 }
 
 export async function loadRequisitions(): Promise<Requisition[]> {
+  console.log('loadRequisitions: Starting to load all requisitions')
+  
   // First, get all requisitions
   const { data: requisitions, error: reqError } = await supabase
     .from('requisitions')
     .select('*') as { data: DatabaseRequisition[] | null, error: any };
 
-  if (reqError) throw reqError;
-  if (!requisitions) return [];
+  if (reqError) {
+    console.error('loadRequisitions: Error loading requisitions:', reqError)
+    throw reqError
+  }
+  
+  if (!requisitions) {
+    console.log('loadRequisitions: No requisitions found')
+    return []
+  }
+
+  console.log('loadRequisitions: Found', requisitions.length, 'requisitions')
 
   // Transform database documents to frontend Document type
   const transformDocuments = (docs: DatabaseDocument[] | null, currentStage: WorkflowStage): Document[] => {
@@ -420,7 +431,9 @@ export async function loadRequisitions(): Promise<Requisition[]> {
     })
   );
 
-  return fullRequisitions.filter((req): req is Requisition => req !== null);
+  const result = fullRequisitions.filter((req): req is Requisition => req !== null);
+  console.log('loadRequisitions: Successfully loaded', result.length, 'requisitions with full data')
+  return result;
 }
 
 export async function loadRequisition(id: string): Promise<Requisition | null> {

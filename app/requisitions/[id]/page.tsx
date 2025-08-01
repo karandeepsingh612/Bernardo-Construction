@@ -103,6 +103,42 @@ function RequisitionDetailPageContent() {
     }
   }, [requisition?.week])
 
+  // Auto-save week field when it changes
+  useEffect(() => {
+    if (!requisition || !week) return
+
+    // Only save if week has actually changed from the requisition's week
+    if (week === requisition.week) return
+
+    // Debounce the save to avoid too many API calls
+    const timeoutId = setTimeout(async () => {
+      try {
+        const updatedRequisition = {
+          ...requisition,
+          week,
+          lastModified: new Date().toISOString(),
+        }
+        
+        await saveRequisition(updatedRequisition, user?.fullName)
+        setRequisition(updatedRequisition)
+        
+        toast({
+          title: "Week Updated",
+          description: "Week field saved successfully",
+        })
+      } catch (error) {
+        console.error('Failed to save week:', error)
+        toast({
+          title: "Error",
+          description: "Failed to save week field",
+          variant: "destructive",
+        })
+      }
+    }, 1000) // 1 second debounce
+
+    return () => clearTimeout(timeoutId)
+  }, [week, requisition, user?.fullName])
+
   const handleSave = async () => {
     if (!requisition) return
 
@@ -210,20 +246,47 @@ function RequisitionDetailPageContent() {
     }
   }
 
-  const handleCommentsChange = (field: string, value: string) => {
+  const handleCommentsChange = async (field: string, value: string) => {
     if (!requisition) return
-    setRequisition({
+    
+    // Update local state immediately
+    const updatedRequisition = {
       ...requisition,
       [field]: value,
       lastModified: new Date().toISOString(),
-    })
+    }
+    setRequisition(updatedRequisition)
+    
+    // Auto-save to Supabase with debounce
+    const timeoutId = setTimeout(async () => {
+      try {
+        await saveRequisition(updatedRequisition, user?.fullName)
+        toast({
+          title: "Comments Saved",
+          description: "Comments saved successfully",
+        })
+      } catch (error) {
+        console.error('Failed to save comments:', error)
+        toast({
+          title: "Error",
+          description: "Failed to save comments",
+          variant: "destructive",
+        })
+      }
+    }, 1000) // 1 second debounce
+
+    return () => clearTimeout(timeoutId)
   }
 
   const getValidationErrors = () => {
-    if (!requisition || !userRole) return [];
+    if (!requisition) return [];
     const errors: string[] = [];
 
-    switch (userRole) {
+    // Use currentStage instead of userRole for validation
+    // This ensures that when completing a stage, we check the rules for that stage
+    const stageToValidate = requisition.currentStage;
+
+    switch (stageToValidate) {
       case "resident":
         requisition.items.forEach((item, index) => {
           if (!item.description) errors.push(`Item ${index + 1}: Description is required`)
@@ -234,6 +297,12 @@ function RequisitionDetailPageContent() {
         break
       case "procurement":
         requisition.items.forEach((item, index) => {
+          // Basic information (since procurement can add this)
+          if (!item.description) errors.push(`Item ${index + 1}: Description is required`)
+          if (!item.classification) errors.push(`Item ${index + 1}: Classification is required`)
+          if (!item.amount || item.amount <= 0) errors.push(`Item ${index + 1}: Amount must be greater than 0`)
+          if (!item.unit) errors.push(`Item ${index + 1}: Unit is required`)
+          // Procurement-specific information
           if (!item.supplier) errors.push(`Item ${index + 1}: Supplier is required`)
           if (!item.priceUnit || item.priceUnit <= 0)
             errors.push(`Item ${index + 1}: Price per unit must be greater than 0`)
@@ -241,6 +310,7 @@ function RequisitionDetailPageContent() {
         })
         break
       case "treasury":
+        // Treasury can always complete their stage
         break
       case "ceo":
         requisition.items.forEach((item, index) => {

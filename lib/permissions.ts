@@ -65,6 +65,11 @@ export function getNextStage(currentStage: WorkflowStage): WorkflowStage | null 
 export function canUserAccessStage(userRole: WorkflowStage | null, stage: WorkflowStage): boolean {
   if (!userRole) return false;
   
+  // CEO can access all stages (super user)
+  if (userRole === "ceo") {
+    return true;
+  }
+  
   // Treasury role can access both treasury and payment stages
   if (userRole === "treasury") {
     return stage === "treasury" || stage === "payment";
@@ -78,7 +83,12 @@ export function canUserEditField(role: WorkflowStage | null, field: string): boo
   
   const fieldPermissions: Record<WorkflowStage, string[]> = {
     resident: ["classification", "description", "amount", "unit"],
-    procurement: ["supplier", "supplier_rfc", "priceUnit", "multiplier"],
+    procurement: [
+      // Basic information fields (so they can create requisitions)
+      "classification", "description", "amount", "unit",
+      // Procurement-specific fields
+      "supplier", "supplier_rfc", "priceUnit", "multiplier"
+    ],
     treasury: [
       "paymentStatus", "paymentDate", "paymentAmount", "paymentMethod", "paymentReference", "paymentNumber"
     ],
@@ -88,7 +98,7 @@ export function canUserEditField(role: WorkflowStage | null, field: string): boo
       // Plus all fields from resident
       "classification", "description", "amount", "unit",
       // Plus all fields from procurement
-      "supplier", "supplier_rfc", "priceUnit", "multiplier",
+      "supplier", "supplier_rfc", "priceUnit", "multiplier", "netPrice", "subtotal",
       // Plus all fields from treasury
       "paymentStatus", "paymentDate", "paymentAmount", "paymentMethod", "paymentReference", "paymentNumber",
       // Plus all fields from storekeeper
@@ -166,17 +176,19 @@ export const stageCompletionRules: Record<WorkflowStage, (requisition: Requisiti
   },
   procurement: (requisition) => {
     return requisition.items.every(item => 
+      // Basic information (since procurement can add this)
+      item.description && 
+      item.classification && 
+      item.amount > 0 && 
+      item.unit &&
+      // Procurement-specific information
       item.supplier && 
       item.priceUnit > 0 && 
       item.total > 0
     );
   },
   treasury: () => true, // Treasury can always complete their stage
-  ceo: (requisition) => {
-    return requisition.items.every(item => 
-      item.approvalStatus !== "pending"
-    );
-  },
+  ceo: () => true, // CEO can always complete any stage (super user)
   payment: (requisition) => {
     return requisition.items.every(item => 
       item.approvalStatus !== "approved" || item.paymentStatus === "completed"
