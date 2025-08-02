@@ -23,6 +23,7 @@ type CatalogItem = {
 };
 
 function CatalogPageContent() {
+  const { user } = useAuth();
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -160,6 +161,10 @@ function CatalogPageContent() {
 
   const handleAdd = async () => {
     setErrorMsg(null);
+    
+    // Get current user's name for created_by field
+    const createdBy = user?.fullName || user?.email || 'system';
+    
     if (activeTab === 'materials') {
       if (duplicate || checkingDuplicate || !newItem.classification || !newItem.description || !newItem.unit) return;
       setLoading(true);
@@ -169,7 +174,7 @@ function CatalogPageContent() {
           classification: newItem.classification,
           description: newItem.description,
           unit: newItem.unit,
-          // created_by: set to current user if available, else 'system'
+          created_by: createdBy
         }
       ]);
       if (!error) {
@@ -202,7 +207,7 @@ function CatalogPageContent() {
         {
           name: newSupplier.name,
           rfc: newSupplier.rfc,
-          // created_by: set to current user if available, else 'system'
+          created_by: createdBy
         }
       ]);
       if (!error) {

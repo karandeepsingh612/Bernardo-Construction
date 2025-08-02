@@ -53,7 +53,12 @@ export function isAdmin(user: AuthUser | null): boolean {
 }
 
 export function getRoleDisplayName(role: UserRole): string {
-  return role.charAt(0).toUpperCase() + role.slice(1)
+  switch (role) {
+    case 'ceo':
+      return 'CEO'
+    default:
+      return role.charAt(0).toUpperCase() + role.slice(1)
+  }
 }
 
 export function getNextStage(currentStage: WorkflowStage): WorkflowStage | null {

@@ -10,6 +10,13 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -373,18 +380,22 @@ function UserManagementPageContent() {
               </div>
             </div>
             <div className="sm:w-48">
-              <select
+              <Select
                 value={filterRole}
-                onChange={(e) => setFilterRole(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium text-gray-700"
+                onValueChange={(value) => setFilterRole(value)}
               >
-                <option value="all">All Roles</option>
-                <option value="resident">Resident</option>
-                <option value="procurement">Procurement</option>
-                <option value="treasury">Treasury</option>
-                <option value="ceo">CEO</option>
-                <option value="storekeeper">Storekeeper</option>
-              </select>
+                <SelectTrigger className="w-full bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                  <SelectValue placeholder="All Roles" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="resident">Resident</SelectItem>
+                  <SelectItem value="procurement">Procurement</SelectItem>
+                  <SelectItem value="treasury">Treasury</SelectItem>
+                  <SelectItem value="ceo">CEO</SelectItem>
+                  <SelectItem value="storekeeper">Storekeeper</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
@@ -447,18 +458,22 @@ function UserManagementPageContent() {
                         <TableCell>
                           {editingUserId === userProfile.id ? (
                             <div className="flex items-center gap-2">
-                              <select
+                              <Select
                                 value={editingRole}
-                                onChange={(e) => setEditingRole(e.target.value)}
-                                className="px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                onValueChange={(value) => setEditingRole(value)}
                                 disabled={updating}
                               >
-                                <option value="resident">Resident</option>
-                                <option value="procurement">Procurement</option>
-                                <option value="treasury">Treasury</option>
-                                <option value="ceo">CEO</option>
-                                <option value="storekeeper">Storekeeper</option>
-                              </select>
+                                <SelectTrigger className="w-32 h-8 text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="resident">Resident</SelectItem>
+                                  <SelectItem value="procurement">Procurement</SelectItem>
+                                  <SelectItem value="treasury">Treasury</SelectItem>
+                                  <SelectItem value="ceo">CEO</SelectItem>
+                                  <SelectItem value="storekeeper">Storekeeper</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
                           ) : (
                             <Badge 

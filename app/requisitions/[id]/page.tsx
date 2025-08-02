@@ -439,22 +439,26 @@ function RequisitionDetailPageContent() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center gap-4">
+      <div className="flex justify-between items-start mb-8">
+        <div className="flex items-start gap-4">
           <Link href="/requisitions">
             <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
           </Link>
-          <div>
-            <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-bold text-gray-900">{requisition.requisitionNumber}</h1>
-              <Badge className={cn("text-sm", getStatusColor(requisition.status))}>
+          <div className="flex-1">
+            {/* Requisition ID and Status Header */}
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+                {requisition.requisitionNumber}
+              </h1>
+              <Badge className={cn("text-sm font-medium", getStatusColor(requisition.status))}>
                 {STATUS_LABELS[requisition.status]}
               </Badge>
             </div>
-            <p className="text-gray-600 mt-2">Project: {requisition.projectName}</p>
+            {/* Project Info */}
+            <p className="text-gray-600 text-sm">Project: {requisition.projectName}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
