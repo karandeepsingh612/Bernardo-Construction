@@ -132,7 +132,7 @@ export async function loadDashboardStats(filters?: DashboardFilters, userRole?: 
       }
       
       // Total Spent: Sum of items with completed payments
-      if (item.payment_status === 'PAID') {
+      if (item.payment_status === 'completed') {
         totalSpent += itemTotal
       }
     })
