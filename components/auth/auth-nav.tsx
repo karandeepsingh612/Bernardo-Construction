@@ -16,9 +16,11 @@ import {
 import { User, LogOut } from 'lucide-react'
 import { canManageUsers, getRoleDisplayName } from '@/lib/permissions'
 import { ProfileModal } from './profile-modal'
+import { useLanguage } from '@/lib/language-context'
 
 export function AuthNav() {
   const { user, loading, signOut } = useAuth()
+  const { t } = useLanguage()
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
 
   if (loading) {
@@ -59,16 +61,16 @@ export function AuthNav() {
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
-                {user.fullName || 'User'}
+                {user.fullName || t('profile.user')}
               </p>
               <p className="text-xs leading-none text-muted-foreground">
                 {user.email}
               </p>
               {user.role && (
                 <p className="text-xs leading-none text-blue-600 font-medium">
-                  {getRoleDisplayName(user.role)}
+                  {t(`dashboard.stages.${user.role}`)}
                   {canManageUsers(user) && (
-                    <span className="ml-1 text-orange-600">• Admin</span>
+                    <span className="ml-1 text-orange-600">• {t('navigation.admin')}</span>
                   )}
                 </p>
               )}
@@ -77,7 +79,7 @@ export function AuthNav() {
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setIsProfileModalOpen(true)} className="flex items-center">
             <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+            <span>{t('navigation.profile')}</span>
           </DropdownMenuItem>
 
           {canManageUsers(user) && (
@@ -86,7 +88,7 @@ export function AuthNav() {
               <DropdownMenuItem asChild>
                 <Link href="/admin/users" className="flex items-center">
                   <User className="mr-2 h-4 w-4" />
-                  <span>Manage Users</span>
+                  <span>{t('navigation.manageUsers')}</span>
                 </Link>
               </DropdownMenuItem>
             </>
@@ -97,7 +99,7 @@ export function AuthNav() {
             className="flex items-center text-red-600 focus:text-red-600"
           >
             <LogOut className="mr-2 h-4 w-4" />
-            <span>Sign Out</span>
+            <span>{t('navigation.signOut')}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

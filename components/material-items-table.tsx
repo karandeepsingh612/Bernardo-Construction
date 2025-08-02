@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useLanguage } from "@/lib/language-context"
 import {
   Table,
   TableHeader,
@@ -37,6 +38,7 @@ interface MaterialItemsTableProps {
 }
 
 export function MaterialItemsTable({ items, onItemsChange, userRole, requisitionId, currentStage }: MaterialItemsTableProps) {
+  const { t } = useLanguage()
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<RequisitionItem | null>(null)
   const [viewMode, setViewMode] = useState<"table" | "cards">("table")
@@ -578,7 +580,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <h3 className="text-lg font-semibold">Material Items ({items.length})</h3>
+          <h3 className="text-lg font-semibold">{t('requisitionDetail.materialTable.title')} ({items.length})</h3>
           <div className="flex items-center gap-2">
             <Button
               variant={viewMode === "table" ? "default" : "outline"}
@@ -586,7 +588,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
               onClick={() => setViewMode("table")}
             >
               <TableIcon className="h-4 w-4 mr-2" />
-              Table View
+              {t('requisitionDetail.materialTable.tableView')}
             </Button>
             <Button
               variant={viewMode === "cards" ? "default" : "outline"}
@@ -594,13 +596,13 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
               onClick={() => setViewMode("cards")}
             >
               <Grid3X3 className="h-4 w-4 mr-2" />
-              Card View
+              {t('requisitionDetail.materialTable.cardView')}
             </Button>
           </div>
         </div>
         <Button onClick={addNewItem} size="sm">
           <Plus className="h-4 w-4 mr-2" />
-          Add Material
+          {t('requisitionDetail.materialTable.addMaterial')}
         </Button>
       </div>
 
@@ -608,11 +610,11 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
         <Card className="border-dashed">
           <CardContent className="py-12 text-center">
             <div className="text-gray-500">
-              <h3 className="text-lg font-medium mb-2">No materials added yet</h3>
-              <p className="mb-4">Click "Add Material" to get started</p>
+              <h3 className="text-lg font-medium mb-2">{t('requisitionDetail.materialTable.noMaterials')}</h3>
+              <p className="mb-4">{t('requisitionDetail.materialTable.clickToGetStarted', { addMaterial: t('requisitionDetail.materialTable.addMaterial') })}</p>
               <Button onClick={addNewItem}>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Your First Material
+                {t('requisitionDetail.materialTable.addMaterial')}
               </Button>
             </div>
           </CardContent>
@@ -630,42 +632,42 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                         # {sortColumn === 'index' && (sortDirection === 'asc' ? '▲' : '▼')}
                       </TableHead>
                       <TableHead className="cursor-pointer" onClick={() => handleSort('classification')}>
-                        Classification {sortColumn === 'classification' && (sortDirection === 'asc' ? '▲' : '▼')}
+                        {t('requisitionDetail.materialTable.classification')} {sortColumn === 'classification' && (sortDirection === 'asc' ? '▲' : '▼')}
                       </TableHead>
                       <TableHead className="cursor-pointer" onClick={() => handleSort('supplier')}>
-                        Supplier {sortColumn === 'supplier' && (sortDirection === 'asc' ? '▲' : '▼')}
+                        {t('requisitionDetail.materialTable.supplier')} {sortColumn === 'supplier' && (sortDirection === 'asc' ? '▲' : '▼')}
                       </TableHead>
                       <TableHead className="cursor-pointer" onClick={() => handleSort('description')}>
-                        Description {sortColumn === 'description' && (sortDirection === 'asc' ? '▲' : '▼')}
+                        {t('requisitionDetail.materialTable.description')} {sortColumn === 'description' && (sortDirection === 'asc' ? '▲' : '▼')}
                       </TableHead>
                       <TableHead className="cursor-pointer" onClick={() => handleSort('amount')}>
-                        Amount {sortColumn === 'amount' && (sortDirection === 'asc' ? '▲' : '▼')}
+                        {t('requisitionDetail.materialTable.amount')} {sortColumn === 'amount' && (sortDirection === 'asc' ? '▲' : '▼')}
                       </TableHead>
                       <TableHead className="cursor-pointer" onClick={() => handleSort('unit')}>
-                        Unit {sortColumn === 'unit' && (sortDirection === 'asc' ? '▲' : '▼')}
+                        {t('requisitionDetail.materialTable.unit')} {sortColumn === 'unit' && (sortDirection === 'asc' ? '▲' : '▼')}
                       </TableHead>
                       <TableHead className="cursor-pointer" onClick={() => handleSort('priceUnit')}>
-                        Price/Unit {sortColumn === 'priceUnit' && (sortDirection === 'asc' ? '▲' : '▼')}
+                        {t('requisitionDetail.materialTable.pricePerUnit')} {sortColumn === 'priceUnit' && (sortDirection === 'asc' ? '▲' : '▼')}
                       </TableHead>
                       <TableHead className="cursor-pointer" onClick={() => handleSort('total')}>
-                        Total {sortColumn === 'total' && (sortDirection === 'asc' ? '▲' : '▼')}
+                        {t('requisitionDetail.materialTable.total')} {sortColumn === 'total' && (sortDirection === 'asc' ? '▲' : '▼')}
                       </TableHead>
                       <TableHead className="cursor-pointer min-w-[150px] whitespace-nowrap" onClick={() => handleSort('approvalStatus')}>
-                        CEO Approval Status {sortColumn === 'approvalStatus' && (sortDirection === 'asc' ? '▲' : '▼')}
+                        {t('requisitionDetail.materialTable.ceoApprovalStatus')} {sortColumn === 'approvalStatus' && (sortDirection === 'asc' ? '▲' : '▼')}
                       </TableHead>
                       <TableHead className="cursor-pointer" onClick={() => handleSort('paymentStatus')}>
-                        Payment Status {sortColumn === 'paymentStatus' && (sortDirection === 'asc' ? '▲' : '▼')}
+                        {t('requisitionDetail.materialTable.paymentStatus')} {sortColumn === 'paymentStatus' && (sortDirection === 'asc' ? '▲' : '▼')}
                       </TableHead>
                       <TableHead className="cursor-pointer min-w-[120px] whitespace-nowrap" onClick={() => handleSort('deliveryDate')}>
-                        Delivery Date {sortColumn === 'deliveryDate' && (sortDirection === 'asc' ? '▲' : '▼')}
+                        {t('requisitionDetail.materialTable.deliveryDate')} {sortColumn === 'deliveryDate' && (sortDirection === 'asc' ? '▲' : '▼')}
                       </TableHead>
                       <TableHead className="cursor-pointer" onClick={() => handleSort('quantityReceived')}>
-                        Qty Received {sortColumn === 'quantityReceived' && (sortDirection === 'asc' ? '▲' : '▼')}
+                        {t('requisitionDetail.materialTable.quantityReceived')} {sortColumn === 'quantityReceived' && (sortDirection === 'asc' ? '▲' : '▼')}
                       </TableHead>
                       <TableHead className="cursor-pointer" onClick={() => handleSort('deliveryStatus')}>
-                        Delivery Status {sortColumn === 'deliveryStatus' && (sortDirection === 'asc' ? '▲' : '▼')}
+                        {t('requisitionDetail.materialTable.deliveryStatus')} {sortColumn === 'deliveryStatus' && (sortDirection === 'asc' ? '▲' : '▼')}
                       </TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>{t('requisitionDetail.materialTable.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -686,8 +688,8 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                         <TableCell>
                           <Badge className={getApprovalStatusColor(item.approvalStatus)}>
                             {item.approvalStatus === "Save for Later" 
-                              ? "Save for Later"
-                              : item.approvalStatus.charAt(0).toUpperCase() + item.approvalStatus.slice(1)}
+                              ? t('requisitionDetail.materialModal.displayValues.approvalStatus.saveForLater')
+                              : t(`requisitionDetail.materialModal.displayValues.approvalStatus.${item.approvalStatus}`)}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -698,7 +700,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                               item.paymentStatus === "rejected" && "bg-red-100 text-red-800",
                               item.paymentStatus === "pending" && "bg-yellow-100 text-yellow-800"
                             )}>
-                              {item.paymentStatus.charAt(0).toUpperCase() + item.paymentStatus.slice(1)}
+                              {t(`requisitionDetail.materialModal.displayValues.paymentStatus.${item.paymentStatus}`)}
                             </Badge>
                           )}
                         </TableCell>
@@ -718,8 +720,8 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                             )}
                           >
                             {getDeliveryStatus(item.deliveryRecords, item.amount) === "Complete"
-                              ? "Completed"
-                              : getDeliveryStatus(item.deliveryRecords, item.amount).charAt(0).toUpperCase() + getDeliveryStatus(item.deliveryRecords, item.amount).slice(1)}
+                              ? t('requisitionDetail.materialModal.status.completed')
+                              : t(`requisitionDetail.materialModal.status.${getDeliveryStatus(item.deliveryRecords, item.amount)}`)}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -766,9 +768,8 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                     {item.approvalStatus && (
                       <Badge className={getApprovalStatusColor(item.approvalStatus)}>
                         {item.approvalStatus === "Save for Later"
-                          ? "Save for Later"
-                          : (item.approvalStatus || "pending").charAt(0).toUpperCase() +
-                            (item.approvalStatus || "pending").slice(1)}
+                          ? t('requisitionDetail.materialModal.displayValues.approvalStatus.saveForLater')
+                          : t(`requisitionDetail.materialModal.displayValues.approvalStatus.${item.approvalStatus || 'pending'}`)}
                       </Badge>
                     )}
                     <div className="flex gap-1">
@@ -786,7 +787,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                         disabled={!canDeleteItem(item)}
                         title={
                           canDeleteItem(item)
-                            ? "Delete"
+                            ? t('requisitionDetail.materialTable.delete')
                             : item.approvalStatus === "approved"
                             ? "Cannot delete CEO-approved items"
                             : "You don't have permission to delete this item"
@@ -853,7 +854,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingItem?.description ? `Edit: ${editingItem.description}` : "Edit Material"}</DialogTitle>
+            <DialogTitle>{editingItem?.description ? `${t('requisitionDetail.materialModal.editTitle')}: ${editingItem.description}` : t('requisitionDetail.materialModal.editTitle')}</DialogTitle>
           </DialogHeader>
 
           {editingItem && (
@@ -862,10 +863,10 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
               <input className="sr-only" autoFocus tabIndex={-1} aria-hidden="true" />
               {/* Basic Information */}
               <div>
-                <h4 className="font-medium text-sm text-blue-600 mb-3">BASIC INFORMATION</h4>
+                <h4 className="font-medium text-sm text-blue-600 mb-3">{t('requisitionDetail.materialModal.basicInformation')}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="modal-classification">Classification</Label>
+                    <Label htmlFor="modal-classification">{t('requisitionDetail.materialModal.classification')}</Label>
                     <Select
                       value={editingItem.classification}
                       onValueChange={(value) => {
@@ -883,7 +884,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                       disabled={!canEditField("classification")}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select classification" />
+                        <SelectValue placeholder={t('requisitionDetail.materialModal.selectClassification')} />
                       </SelectTrigger>
                       <SelectContent>
                         {Array.from(new Set(catalogData.map(item => item.classification)))
@@ -898,7 +899,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="modal-description">Description</Label>
+                    <Label htmlFor="modal-description">{t('requisitionDetail.materialModal.description')}</Label>
                     <Select
                       key={`desc-${editingItem.classification}`}
                       value={editingItem.description}
@@ -919,7 +920,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                       disabled={!editingItem.classification || !canEditField("description")}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select description" />
+                        <SelectValue placeholder={t('requisitionDetail.materialModal.selectDescription')} />
                       </SelectTrigger>
                       <SelectContent>
                         {catalogData
@@ -933,7 +934,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="modal-amount">Amount *</Label>
+                    <Label htmlFor="modal-amount">{t('requisitionDetail.materialModal.amount')} *</Label>
                     <Input
                       id="modal-amount"
                       type="number"
@@ -948,12 +949,12 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                     />
                   </div>
                   <div>
-                    <Label htmlFor="modal-unit">Unit *</Label>
+                    <Label htmlFor="modal-unit">{t('requisitionDetail.materialModal.unit')} *</Label>
                     <Input
                       id="modal-unit"
                       value={editingItem.unit}
                       readOnly
-                      placeholder="Unit"
+                      placeholder={t('requisitionDetail.materialModal.unit')}
                       className="bg-gray-50 cursor-not-allowed"
                     />
                   </div>
@@ -964,10 +965,10 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
 
               {/* Procurement Information */}
               <div>
-                <h4 className="font-medium text-sm text-green-600 mb-3">PROCUREMENT INFORMATION</h4>
+                <h4 className="font-medium text-sm text-green-600 mb-3">{t('requisitionDetail.materialModal.procurementInformation')}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="modal-supplier">Supplier Name</Label>
+                    <Label htmlFor="modal-supplier">{t('requisitionDetail.materialModal.supplierName')}</Label>
                     <Select
                       value={editingItem.supplier}
                       onValueChange={(value) => {
@@ -983,7 +984,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                       disabled={userRole === 'resident' || !canEditField("supplier")}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select supplier" />
+                        <SelectValue placeholder={t('requisitionDetail.materialModal.selectSupplier')} />
                       </SelectTrigger>
                       <SelectContent>
                         {supplierData.map((supplier) => (
@@ -995,7 +996,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="modal-supplier-rfc">Supplier RFC</Label>
+                    <Label htmlFor="modal-supplier-rfc">{t('requisitionDetail.materialModal.supplierRfc')}</Label>
                     <Select
                       value={editingItem.supplier_rfc}
                       onValueChange={(value) => {
@@ -1011,7 +1012,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                       disabled={userRole === 'resident' || !canEditField("supplier")}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select RFC" />
+                        <SelectValue placeholder={t('requisitionDetail.materialModal.selectRfc')} />
                       </SelectTrigger>
                       <SelectContent>
                         {supplierData.map((supplier) => (
@@ -1023,7 +1024,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="modal-priceUnit">Price per Unit</Label>
+                    <Label htmlFor="modal-priceUnit">{t('requisitionDetail.materialModal.pricePerUnit')}</Label>
                     <Input
                       id="modal-priceUnit"
                       type="number"
@@ -1038,7 +1039,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                     />
                   </div>
                   <div>
-                    <Label htmlFor="modal-multiplier">Multiplier</Label>
+                    <Label htmlFor="modal-multiplier">{t('requisitionDetail.materialModal.multiplier')}</Label>
                     <Input
                       id="modal-multiplier"
                       type="number"
@@ -1051,10 +1052,10 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                       placeholder="1.16"
                       disabled={!canEditField("multiplier")}
                     />
-                    <p className="text-xs text-gray-500 mt-1">Default: 1.16 (includes markup/taxes)</p>
+                    <p className="text-xs text-gray-500 mt-1">{t('requisitionDetail.materialModal.defaultMultiplier')}</p>
                   </div>
                   <div>
-                    <Label htmlFor="modal-netPrice">Net Price</Label>
+                    <Label htmlFor="modal-netPrice">{t('requisitionDetail.materialModal.netPrice')}</Label>
                     <Input
                       id="modal-netPrice"
                       type="number"
@@ -1063,10 +1064,10 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                       disabled
                       className="bg-gray-50"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Auto-calculated: Price per Unit × Multiplier</p>
+                    <p className="text-xs text-gray-500 mt-1">{t('requisitionDetail.materialModal.autoCalculatedPrice')}</p>
                   </div>
                   <div>
-                    <Label htmlFor="modal-subtotal">Sub Total</Label>
+                    <Label htmlFor="modal-subtotal">{t('requisitionDetail.materialModal.subTotal')}</Label>
                     <Input
                       id="modal-subtotal"
                       type="number"
@@ -1075,10 +1076,10 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                       disabled
                       className="bg-gray-50"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Auto-calculated: Price per Unit × Amount</p>
+                    <p className="text-xs text-gray-500 mt-1">{t('requisitionDetail.materialModal.autoCalculatedSubTotal')}</p>
                   </div>
                   <div>
-                    <Label htmlFor="modal-total">Total</Label>
+                    <Label htmlFor="modal-total">{t('requisitionDetail.materialModal.total')}</Label>
                     <Input
                       id="modal-total"
                       type="number"
@@ -1087,7 +1088,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                       disabled
                       className="bg-gray-50"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Auto-calculated: Sub Total × Multiplier</p>
+                    <p className="text-xs text-gray-500 mt-1">{t('requisitionDetail.materialModal.autoCalculatedTotal')}</p>
                   </div>
                 </div>
               </div>
@@ -1096,10 +1097,10 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
 
               {/* CEO Approval */}
               <div>
-                <h4 className="font-medium text-sm text-purple-600 mb-3">CEO APPROVAL</h4>
+                <h4 className="font-medium text-sm text-purple-600 mb-3">{t('requisitionDetail.materialModal.ceoApproval')}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="modal-approvalStatus">Approval Status</Label>
+                    <Label htmlFor="modal-approvalStatus">{t('requisitionDetail.materialModal.approvalStatus')}</Label>
                     <Select
                       value={editingItem.approvalStatus}
                       onValueChange={(value) => updateEditingItem("approvalStatus", value)}
@@ -1109,16 +1110,16 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="approved">Approved</SelectItem>
-                        <SelectItem value="rejected">Rejected</SelectItem>
-                        <SelectItem value="partial">Partial</SelectItem>
-                        <SelectItem value="Save for Later">Save for Later</SelectItem>
+                        <SelectItem value="pending">{t('requisitionDetail.materialModal.status.pending')}</SelectItem>
+                        <SelectItem value="approved">{t('requisitionDetail.materialModal.status.approved')}</SelectItem>
+                        <SelectItem value="rejected">{t('requisitionDetail.materialModal.status.rejected')}</SelectItem>
+                        <SelectItem value="partial">{t('requisitionDetail.materialModal.status.partial')}</SelectItem>
+                        <SelectItem value="Save for Later">{t('requisitionDetail.materialModal.status.saveForLater')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="modal-ceoComments">CEO Comments</Label>
+                    <Label htmlFor="modal-ceoComments">{t('requisitionDetail.materialModal.ceoComments')}</Label>
                     <Textarea
                       id="modal-ceoComments"
                       value={editingItem.ceoItemComments}
@@ -1135,10 +1136,10 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
 
               {/* Payment Information */}
               <div>
-                <h4 className="font-medium text-sm text-yellow-600 mb-3">PAYMENT INFORMATION</h4>
+                <h4 className="font-medium text-sm text-yellow-600 mb-3">{t('requisitionDetail.materialModal.paymentInformation')}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="modal-paymentStatus">Payment Status</Label>
+                    <Label htmlFor="modal-paymentStatus">{t('requisitionDetail.materialModal.paymentStatus')}</Label>
                     <Select
                       value={editingItem.paymentStatus}
                       onValueChange={(value) => {
@@ -1156,28 +1157,28 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                       disabled={!canEditField("paymentStatus")}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
+                        <SelectValue placeholder={t('requisitionDetail.materialModal.paymentStatus')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="rejected">Rejected</SelectItem>
+                        <SelectItem value="pending">{t('requisitionDetail.materialModal.status.pending')}</SelectItem>
+                        <SelectItem value="completed">{t('requisitionDetail.materialModal.status.completed')}</SelectItem>
+                        <SelectItem value="rejected">{t('requisitionDetail.materialModal.status.rejected')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="modal-paymentNumber">Payment Number</Label>
+                    <Label htmlFor="modal-paymentNumber">{t('requisitionDetail.materialModal.paymentNumber')}</Label>
                     <Input
                       id="modal-paymentNumber"
                       value={editingItem.paymentNumber}
                       onChange={(e) => updateEditingItem("paymentNumber", e.target.value)}
-                      placeholder="e.g., PAY-2024-001"
+                      placeholder={t('requisitionDetail.materialModal.paymentNumberPlaceholder')}
                       disabled={!canEditField("paymentNumber") || editingItem.paymentStatus === "completed"}
                       className={editingItem.paymentStatus === "completed" ? "bg-gray-100 text-gray-500" : ""}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="modal-paymentDate">Payment Date</Label>
+                    <Label htmlFor="modal-paymentDate">{t('requisitionDetail.materialModal.paymentDate')}</Label>
                     <Input
                       id="modal-paymentDate"
                       type="date"
@@ -1187,7 +1188,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                     />
                   </div>
                   <div>
-                    <Label htmlFor="modal-paymentAmount">Payment Amount</Label>
+                    <Label htmlFor="modal-paymentAmount">{t('requisitionDetail.materialModal.paymentAmount')}</Label>
                     <Input
                       id="modal-paymentAmount"
                       type="number"
@@ -1202,30 +1203,30 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                     />
                   </div>
                   <div>
-                    <Label htmlFor="modal-paymentMethod">Payment Method</Label>
+                    <Label htmlFor="modal-paymentMethod">{t('requisitionDetail.materialModal.paymentMethod')}</Label>
                     <Select
                       value={editingItem.paymentMethod}
                       onValueChange={(value) => updateEditingItem("paymentMethod", value)}
                       disabled={!canEditField("paymentMethod")}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select method" />
+                        <SelectValue placeholder={t('requisitionDetail.materialModal.selectMethod')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                        <SelectItem value="check">Check</SelectItem>
-                        <SelectItem value="cash">Cash</SelectItem>
-                        <SelectItem value="credit_card">Credit Card</SelectItem>
+                        <SelectItem value="bank_transfer">{t('requisitionDetail.materialModal.paymentMethod.bankTransfer')}</SelectItem>
+                        <SelectItem value="check">{t('requisitionDetail.materialModal.paymentMethod.check')}</SelectItem>
+                        <SelectItem value="cash">{t('requisitionDetail.materialModal.paymentMethod.cash')}</SelectItem>
+                        <SelectItem value="credit_card">{t('requisitionDetail.materialModal.paymentMethod.creditCard')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="modal-paymentReference">Payment Reference</Label>
+                    <Label htmlFor="modal-paymentReference">{t('requisitionDetail.materialModal.paymentReference')}</Label>
                     <Input
                       id="modal-paymentReference"
                       value={editingItem.paymentReference}
                       onChange={(e) => updateEditingItem("paymentReference", e.target.value)}
-                      placeholder="e.g., TXN123456"
+                      placeholder={t('requisitionDetail.materialModal.paymentReferencePlaceholder')}
                       disabled={!canEditField("paymentReference")}
                     />
                   </div>
@@ -1236,19 +1237,19 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
 
               {/* Delivery Information */}
               <div>
-                <h4 className="font-medium text-sm text-orange-600 mb-3">DELIVERY INFORMATION</h4>
+                <h4 className="font-medium text-sm text-orange-600 mb-3">{t('requisitionDetail.materialModal.deliveryInformation')}</h4>
 
                 {/* Delivery Summary */}
                 <div className="bg-blue-50 p-4 rounded-lg mb-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div>
-                      <span className="font-medium text-blue-700">Total Ordered:</span>
+                      <span className="font-medium text-blue-700">{t('requisitionDetail.materialModal.totalOrdered')}:</span>
                       <p className="text-lg font-semibold text-blue-900">
                         {editingItem.amount} {editingItem.unit}
                       </p>
                     </div>
                     <div>
-                      <span className="font-medium text-blue-700">Total Received:</span>
+                      <span className="font-medium text-blue-700">{t('requisitionDetail.materialModal.totalReceived')}:</span>
                       <p className="text-lg font-semibold text-blue-900">
                         {getItemTotalReceived(editingItem)} {editingItem.unit}
                       </p>
@@ -1278,7 +1279,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <h5 className="font-medium text-sm">
-                      Delivery Records ({editingItem.deliveryRecords?.length || 0})
+                      {t('requisitionDetail.materialModal.deliveryRecords')} ({editingItem.deliveryRecords?.length || 0})
                     </h5>
                     {canEditField("deliveryRecords") && (
                       <Button
@@ -1305,7 +1306,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                         }}
                       >
                         <Plus className="h-4 w-4 mr-2" />
-                        Add Delivery
+                        {t('requisitionDetail.materialModal.addDelivery')}
                       </Button>
                     )}
                   </div>
@@ -1321,10 +1322,10 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                           <Card key={record.id} className={cn("p-4", isEditing && "ring-2 ring-blue-500")}>
                             <div className="flex justify-between items-start mb-3">
                               <h6 className="font-medium text-sm">
-                                Delivery #{deliveryNumber}
+                                {t('requisitionDetail.materialModal.deliveryNumber')}{deliveryNumber}
                                 {displayIndex === 0 && (
                                   <Badge variant="outline" className="ml-2 text-xs">
-                                    Latest
+                                    {t('requisitionDetail.materialModal.latest')}
                                   </Badge>
                                 )}
                               </h6>
@@ -1391,7 +1392,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor={`delivery-date-${record.id}`} className="flex items-center gap-1">
-                                  Delivery Date <span className="text-red-500">*</span>
+                                  {t('requisitionDetail.materialModal.deliveryDate')} <span className="text-red-500">*</span>
                                 </Label>
                                 {isEditing ? (
                                   <Input
@@ -1414,7 +1415,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                               </div>
                               <div>
                                 <Label htmlFor={`quantity-${record.id}`} className="flex items-center gap-1">
-                                  Quantity Received <span className="text-red-500">*</span>
+                                  {t('requisitionDetail.materialModal.quantityReceived')} <span className="text-red-500">*</span>
                                 </Label>
                                 {isEditing ? (
                                   <Input
@@ -1454,7 +1455,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                               </div>
                               <div>
                                 <Label htmlFor={`quality-${record.id}`} className="flex items-center gap-1">
-                                  Quality Check <span className="text-red-500">*</span>
+                                  {t('requisitionDetail.materialModal.qualityCheck')} <span className="text-red-500">*</span>
                                 </Label>
                                 {isEditing ? (
                                   <Select
@@ -1471,10 +1472,10 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                                       <SelectValue placeholder="Select quality" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      <SelectItem value="passed">Passed</SelectItem>
-                                      <SelectItem value="failed">Failed</SelectItem>
-                                      <SelectItem value="partial">Partial</SelectItem>
-                                      <SelectItem value="pending">Pending</SelectItem>
+                                                              <SelectItem value="passed">{t('requisitionDetail.materialModal.qualityCheck.passed')}</SelectItem>
+                        <SelectItem value="failed">{t('requisitionDetail.materialModal.qualityCheck.failed')}</SelectItem>
+                        <SelectItem value="partial">{t('requisitionDetail.materialModal.qualityCheck.partial')}</SelectItem>
+                        <SelectItem value="pending">{t('requisitionDetail.materialModal.qualityCheck.pending')}</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 ) : (
@@ -1499,7 +1500,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                               </div>
                               <div>
                                 <Label htmlFor={`received-by-${record.id}`} className="flex items-center gap-1">
-                                  Received By <span className="text-red-500">*</span>
+                                  {t('requisitionDetail.materialModal.receivedBy')} <span className="text-red-500">*</span>
                                 </Label>
                                 {isEditing ? (
                                   <Input
@@ -1511,7 +1512,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                                       )
                                       updateEditingItem("deliveryRecords", updatedRecords)
                                     }}
-                                    placeholder="Name of receiver"
+                                    placeholder={t('requisitionDetail.materialModal.placeholder.nameOfReceiver')}
                                     required
                                   />
                                 ) : (
@@ -1549,9 +1550,9 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
                     </div>
                   ) : (
                     <div className="text-center py-8 text-gray-500">
-                      <p>No delivery records yet</p>
+                      <p>{t('requisitionDetail.materialModal.deliveryRecords')}</p>
                       {canEditField("deliveryRecords") && (
-                        <p className="text-sm">Click "Add Delivery" to record the first delivery</p>
+                                                  <p className="text-sm">Click "{t('requisitionDetail.materialModal.addDelivery')}" to record the first delivery</p>
                       )}
                     </div>
                   )}
@@ -1563,11 +1564,11 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
           <DialogFooter>
             <Button variant="outline" onClick={closeEditModal}>
               <X className="h-4 w-4 mr-2" />
-              Cancel
+              {t('requisitionDetail.materialModal.cancel')}
             </Button>
             <Button onClick={saveEdit} disabled={!descInput.trim()}>
               <Save className="h-4 w-4 mr-2" />
-              Save Changes
+              {t('requisitionDetail.materialModal.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1577,26 +1578,26 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogTitle>{t('requisitionDetail.materialModal.confirmDeletion')}</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <p className="text-sm text-gray-600">
-              Are you sure you want to delete this material record? This action cannot be undone.
+              {t('requisitionDetail.materialModal.deleteMaterialConfirm')}
             </p>
             {itemToDelete && (
               <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                 <p className="text-sm font-medium">
-                  Material: {items.find((item) => item.id === itemToDelete)?.description || "Unknown"}
+                  {t('requisitionDetail.materialModal.material')}: {items.find((item) => item.id === itemToDelete)?.description || "Unknown"}
                 </p>
               </div>
             )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={cancelDelete}>
-              Cancel
+              {t('requisitionDetail.materialModal.cancel')}
             </Button>
             <Button variant="destructive" onClick={removeItem}>
-              Delete Material
+              {t('requisitionDetail.materialModal.deleteMaterial')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1606,19 +1607,19 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
       <Dialog open={deleteRecordConfirmOpen} onOpenChange={setDeleteRecordConfirmOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogTitle>{t('requisitionDetail.materialModal.confirmDeletion')}</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <p className="text-sm text-gray-600">
-              Are you sure you want to delete this delivery record? This action cannot be undone.
+              {t('requisitionDetail.materialModal.deleteDeliveryConfirm')}
             </p>
             {deleteRecordId && editingItem && (
               <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                 <p className="text-sm font-medium">
-                  Delivery Record: {editingItem.deliveryRecords.find((r) => r.id === deleteRecordId)?.deliveryDate || "Unknown"}
+                  {t('requisitionDetail.materialModal.deliveryRecord')}: {editingItem.deliveryRecords.find((r) => r.id === deleteRecordId)?.deliveryDate || "Unknown"}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
-                  Quantity: {editingItem.deliveryRecords.find((r) => r.id === deleteRecordId)?.quantity || 0} {editingItem.unit}
+                  {t('requisitionDetail.materialModal.quantity')}: {editingItem.deliveryRecords.find((r) => r.id === deleteRecordId)?.quantity || 0} {editingItem.unit}
                 </p>
               </div>
             )}
@@ -1628,7 +1629,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
               setDeleteRecordId(null)
               setDeleteRecordConfirmOpen(false)
             }}>
-              Cancel
+              {t('requisitionDetail.materialModal.cancel')}
             </Button>
             <Button variant="destructive" onClick={() => {
               if (!editingItem || !deleteRecordId) return
@@ -1639,7 +1640,7 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
               setDeleteRecordId(null)
               setDeleteRecordConfirmOpen(false)
             }}>
-              Delete Delivery Record
+              {t('requisitionDetail.materialModal.deleteDeliveryRecord')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1648,9 +1649,9 @@ export function MaterialItemsTable({ items, onItemsChange, userRole, requisition
       {items.length > 0 && (
         <div className="bg-gray-50 p-4 rounded-lg">
           <div className="flex justify-between items-center text-sm">
-            <span className="font-medium">Total Materials: {items.length}</span>
+            <span className="font-medium">{t('requisitionDetail.materialModal.totalMaterials')}: {items.length}</span>
             <span className="font-medium">
-              Total Value: ${items.reduce((sum, item) => sum + (item.approvalStatus === "approved" ? (item.total || 0) : 0), 0).toFixed(2)}
+              {t('requisitionDetail.materialModal.totalValue')}: ${items.reduce((sum, item) => sum + (item.approvalStatus === "approved" ? (item.total || 0) : 0), 0).toFixed(2)}
             </span>
           </div>
         </div>

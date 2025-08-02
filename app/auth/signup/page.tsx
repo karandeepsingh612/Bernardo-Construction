@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAuth } from '@/lib/auth/auth-context'
+import { useLanguage } from '@/lib/language-context'
 
 const signUpSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -31,6 +32,7 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const { signUp, loading, error, clearError } = useAuth()
+  const { t } = useLanguage()
   const router = useRouter()
 
 
@@ -60,8 +62,8 @@ export default function SignUpPage() {
 
   return (
     <AuthLayout
-      title="Create Account"
-              subtitle="Join Dinamiq to manage your construction projects"
+      title={t('auth.signUp.title')}
+      subtitle={t('auth.signUp.subtitle')}
     >
       <form 
         onSubmit={handleSubmit(onSubmit)}
@@ -74,11 +76,11 @@ export default function SignUpPage() {
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="fullName">Full Name</Label>
+          <Label htmlFor="fullName">{t('auth.signUp.fullName')}</Label>
           <Input
             id="fullName"
             type="text"
-            placeholder="Enter your full name"
+            placeholder={t('auth.signUp.fullNamePlaceholder')}
             {...register('fullName')}
             className={errors.fullName ? 'border-red-500' : ''}
           />
@@ -88,11 +90,11 @@ export default function SignUpPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t('auth.signUp.email')}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="Enter your email"
+            placeholder={t('auth.signUp.emailPlaceholder')}
             {...register('email')}
             className={errors.email ? 'border-red-500' : ''}
           />
@@ -102,12 +104,12 @@ export default function SignUpPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t('auth.signUp.password')}</Label>
           <div className="relative">
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
-              placeholder="Create a password"
+              placeholder={t('auth.signUp.passwordPlaceholder')}
               {...register('password')}
               className={errors.password ? 'border-red-500' : ''}
             />
@@ -123,17 +125,17 @@ export default function SignUpPage() {
             <p className="text-sm text-red-500">{errors.password.message}</p>
           )}
           <p className="text-xs text-gray-500">
-            Password must be at least 8 characters long
+            {t('auth.signUp.passwordMinLength')}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <Label htmlFor="confirmPassword">{t('auth.signUp.confirmPassword')}</Label>
           <div className="relative">
             <Input
               id="confirmPassword"
               type={showConfirmPassword ? 'text' : 'password'}
-              placeholder="Confirm your password"
+              placeholder={t('auth.signUp.confirmPasswordPlaceholder')}
               {...register('confirmPassword')}
               className={errors.confirmPassword ? 'border-red-500' : ''}
             />
@@ -158,21 +160,21 @@ export default function SignUpPage() {
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating account...
+              {t('auth.signUp.signingUp')}
             </>
           ) : (
-            'Create Account'
+            t('auth.signUp.signUpButton')
           )}
         </Button>
 
         <div className="text-center">
           <p className="text-sm text-gray-600">
-            Already have an account?{' '}
+            {t('auth.signUp.haveAccount')}{' '}
             <Link
               href="/auth/signin"
               className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
             >
-              Sign in
+              {t('auth.signUp.signIn')}
             </Link>
           </p>
         </div>

@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { User, Mail, Shield } from 'lucide-react'
 import type { AuthUser } from '@/types/auth'
 import { getRoleDisplayName } from '@/lib/permissions'
+import { useLanguage } from '@/lib/language-context'
 
 interface ProfileModalProps {
   user: AuthUser
@@ -20,6 +21,7 @@ interface ProfileModalProps {
 }
 
 export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
+  const { t } = useLanguage()
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -35,7 +37,7 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            User Profile
+            {t('profile.title')}
           </DialogTitle>
         </DialogHeader>
         
@@ -49,12 +51,12 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
             </Avatar>
             <div>
               <h3 className="text-xl font-semibold text-gray-900">
-                {user.fullName || 'User'}
+                {user.fullName || t('profile.user')}
               </h3>
               {user.role && (
                 <Badge variant="secondary" className="mt-1">
                   <Shield className="h-3 w-3 mr-1" />
-                  {getRoleDisplayName(user.role)}
+                  {t(`dashboard.stages.${user.role}`)}
                 </Badge>
               )}
             </div>
@@ -65,7 +67,7 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <Mail className="h-4 w-4 text-gray-500" />
               <div>
-                <p className="text-sm font-medium text-gray-700">Email</p>
+                <p className="text-sm font-medium text-gray-700">{t('profile.email')}</p>
                 <p className="text-sm text-gray-600">{user.email}</p>
               </div>
             </div>
@@ -74,8 +76,8 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <Shield className="h-4 w-4 text-gray-500" />
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Role</p>
-                  <p className="text-sm text-gray-600">{getRoleDisplayName(user.role)}</p>
+                  <p className="text-sm font-medium text-gray-700">{t('profile.role')}</p>
+                  <p className="text-sm text-gray-600">{t(`dashboard.stages.${user.role}`)}</p>
                 </div>
               </div>
             )}
@@ -84,9 +86,9 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <User className="h-4 w-4 text-gray-500" />
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Member Since</p>
+                  <p className="text-sm font-medium text-gray-700">{t('profile.memberSince')}</p>
                   <p className="text-sm text-gray-600">
-                    {new Date(user.created_at).toLocaleDateString('en-US', {
+                    {new Date(user.created_at).toLocaleDateString('es-ES', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { CheckCircle, AlertCircle, Clock, FileText } from "lucide-react"
+import { useLanguage } from "@/lib/language-context"
 
 interface StageCompletionPanelProps {
   requisition: Requisition
@@ -18,6 +19,7 @@ interface StageCompletionPanelProps {
 }
 
 export function StageCompletionPanel({ requisition, userRole, onComplete }: StageCompletionPanelProps) {
+  const { t } = useLanguage()
   const [comments, setComments] = useState("")
   const [isCompleting, setIsCompleting] = useState(false)
   const [showDocumentWarning, setShowDocumentWarning] = useState(false)
@@ -161,7 +163,7 @@ export function StageCompletionPanel({ requisition, userRole, onComplete }: Stag
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              You don't have permission to complete this stage. Current stage: {STAGE_LABELS[currentStage]}
+              You don't have permission to complete this stage. Current stage: {t(`requisitionDetail.stages.${currentStage}`)}
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -175,13 +177,13 @@ export function StageCompletionPanel({ requisition, userRole, onComplete }: Stag
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-500" />
-            Stage Completed
+            {t('requisitionDetail.stageCompletion.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Alert className="border-green-200 bg-green-50">
             <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">This stage has been completed successfully.</AlertDescription>
+            <AlertDescription className="text-green-800">{t('requisitionDetail.stageCompletion.message')}</AlertDescription>
           </Alert>
         </CardContent>
       </Card>
@@ -194,7 +196,7 @@ export function StageCompletionPanel({ requisition, userRole, onComplete }: Stag
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-blue-500" />
-            Complete {STAGE_LABELS[currentStage]} Stage
+            {t('requisitionDetail.stageCompletion.completeStage')} {t(`requisitionDetail.stages.${currentStage}`)} {t('requisitionDetail.stageCompletion.stage')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -215,11 +217,11 @@ export function StageCompletionPanel({ requisition, userRole, onComplete }: Stag
           )}
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Comments for {STAGE_LABELS[currentStage]} stage:</label>
+            <label className="text-sm font-medium">{t('requisitionDetail.stageCompletion.commentsFor')} {t(`requisitionDetail.stages.${currentStage}`)} {t('requisitionDetail.stageCompletion.stage')}:</label>
             <Textarea
               value={comments}
               onChange={(e) => setComments(e.target.value)}
-              placeholder={`Add comments for the ${STAGE_LABELS[currentStage]} stage...`}
+              placeholder={`${t('requisitionDetail.stageCompletion.addCommentsFor')} ${t(`requisitionDetail.stages.${currentStage}`)} ${t('requisitionDetail.stageCompletion.stage')}...`}
               rows={3}
             />
           </div>
@@ -229,14 +231,14 @@ export function StageCompletionPanel({ requisition, userRole, onComplete }: Stag
             disabled={!canComplete || isCompleting || validationErrors.length > 0}
             className="w-full"
           >
-            {isCompleting ? "Completing..." : `Complete ${STAGE_LABELS[currentStage]} Stage`}
+            {isCompleting ? t('requisitionDetail.stageCompletion.completing') : `${t('requisitionDetail.stageCompletion.completeStage')} ${t(`requisitionDetail.stages.${currentStage}`)} ${t('requisitionDetail.stageCompletion.stage')}`}
           </Button>
 
           {!canComplete && validationErrors.length === 0 && (
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                All required fields must be completed before this stage can be marked as complete.
+                {t('requisitionDetail.stageCompletion.allRequiredFields')}
               </AlertDescription>
             </Alert>
           )}
@@ -249,23 +251,23 @@ export function StageCompletionPanel({ requisition, userRole, onComplete }: Stag
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-yellow-500" />
-              No Documents Uploaded
+              {t('requisitionDetail.stageCompletion.noDocumentsUploaded')}
             </DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <p className="text-sm text-gray-600 mb-4">
-              You are marking the <strong>{STAGE_LABELS[currentStage]}</strong> stage as complete, but no documents have been uploaded for this stage.
+              {t('requisitionDetail.stageCompletion.noDocumentsWarning')} <strong>{t(`requisitionDetail.stages.${currentStage}`)}</strong> {t('requisitionDetail.stageCompletion.stageAsComplete')}
             </p>
             <p className="text-sm text-gray-600">
-              It is recommended to upload relevant documents before completing the stage. However, you can still proceed if needed.
+              {t('requisitionDetail.stageCompletion.recommendedToUpload')}
             </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelCompletion}>
-              Cancel
+              {t('requisitionDetail.materialModal.cancel')}
             </Button>
             <Button onClick={handleConfirmCompletion} disabled={isCompleting}>
-              {isCompleting ? "Completing..." : "Complete Stage Anyway"}
+              {isCompleting ? t('requisitionDetail.stageCompletion.completing') : t('requisitionDetail.stageCompletion.completeStageAnyway')}
             </Button>
           </DialogFooter>
         </DialogContent>

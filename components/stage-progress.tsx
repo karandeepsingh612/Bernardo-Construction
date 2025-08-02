@@ -3,6 +3,7 @@
 import { type WorkflowStage, WORKFLOW_STAGES, STAGE_LABELS } from "@/types"
 import { cn } from "@/lib/utils"
 import { Clock, CheckCircle2 } from "lucide-react"
+import { useLanguage } from "@/lib/language-context"
 
 interface StageProgressProps {
   currentStage: WorkflowStage
@@ -10,6 +11,7 @@ interface StageProgressProps {
 }
 
 export function StageProgress({ currentStage, completedStages }: StageProgressProps) {
+  const { t } = useLanguage()
   const currentIndex = WORKFLOW_STAGES.indexOf(currentStage)
 
   return (
@@ -78,16 +80,16 @@ export function StageProgress({ currentStage, completedStages }: StageProgressPr
                       lineHeight: "1.2",
                     }}
                   >
-                    {STAGE_LABELS[stage]}
+                    {t(`requisitionDetail.stages.${stage}`)}
                   </div>
                   {isCurrent && (
                     <div className="mt-1 inline-block px-1 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
-                      Current
+                      {t('requisitionDetail.status.current')}
                     </div>
                   )}
                   {isCompleted && (
                     <div className="mt-1 inline-block px-1 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                      Done
+                      {t('requisitionDetail.status.done')}
                     </div>
                   )}
                 </div>

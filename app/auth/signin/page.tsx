@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAuth } from '@/lib/auth/auth-context'
+import { useLanguage } from '@/lib/language-context'
 
 const signInSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -26,6 +27,7 @@ function SignInForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string>('')
   const { signIn, loading, error, user } = useAuth()
+  const { t } = useLanguage()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -83,8 +85,8 @@ function SignInForm() {
 
   return (
     <AuthLayout
-      title="Sign In"
-              subtitle="Welcome back to Dinamiq"
+      title={t('auth.signIn.title')}
+      subtitle={t('auth.signIn.subtitle')}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {successMessage && (
@@ -101,11 +103,11 @@ function SignInForm() {
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t('auth.signIn.email')}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="Enter your email"
+            placeholder={t('auth.signIn.emailPlaceholder')}
             {...register('email')}
             className={errors.email ? 'border-red-500' : ''}
           />
@@ -115,12 +117,12 @@ function SignInForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t('auth.signIn.password')}</Label>
           <div className="relative">
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
-              placeholder="Enter your password"
+              placeholder={t('auth.signIn.passwordPlaceholder')}
               {...register('password')}
               className={errors.password ? 'border-red-500' : ''}
             />
@@ -145,10 +147,10 @@ function SignInForm() {
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Signing in...
+              {t('auth.signIn.signingIn')}
             </>
           ) : (
-            'Sign In'
+            t('auth.signIn.signInButton')
           )}
         </Button>
 
@@ -157,16 +159,16 @@ function SignInForm() {
             href="/auth/forgot-password"
             className="text-blue-600 hover:text-blue-800 hover:underline text-sm"
           >
-            Forgot your password?
+            {t('auth.signIn.forgotPassword')}
           </Link>
           
           <div className="text-sm text-gray-600">
-            Don't have an account?{' '}
+            {t('auth.signIn.noAccount')}{' '}
             <Link
               href="/auth/signup"
               className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
             >
-              Sign up
+              {t('auth.signIn.signUp')}
             </Link>
           </div>
         </div>

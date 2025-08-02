@@ -19,11 +19,13 @@ import { v4 as uuidv4 } from 'uuid'
 import { useAuth } from "@/lib/auth/auth-context"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
+import { useLanguage } from "@/lib/language-context"
 
 function NewRequisitionPageContent() {
   const router = useRouter()
   const { toast } = useToast()
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [isSaving, setIsSaving] = useState(false)
   const [requisition, setRequisition] = useState<Requisition>({
     id: uuidv4(),
@@ -70,8 +72,8 @@ function NewRequisitionPageContent() {
   const handleSave = async (isDraft = true) => {
     if (!requisition.projectName.trim()) {
       toast({
-        title: "Validation Error",
-        description: "Project name is required",
+        title: t('newRequisition.validationError'),
+        description: t('newRequisition.projectNameRequiredError'),
         variant: "destructive",
       })
       return
@@ -79,8 +81,8 @@ function NewRequisitionPageContent() {
 
     if (requisition.items.length === 0) {
       toast({
-        title: "Validation Error",
-        description: "At least one material item is required",
+        title: t('newRequisition.validationError'),
+        description: t('newRequisition.materialItemsRequiredError'),
         variant: "destructive",
       })
       return
@@ -98,16 +100,16 @@ function NewRequisitionPageContent() {
       await saveRequisition(updatedRequisition, user?.fullName)
 
       toast({
-        title: "Success",
-        description: `Requisition ${isDraft ? "saved as draft" : "created"} successfully`,
+        title: t('newRequisition.success'),
+        description: `Requisition ${isDraft ? t('newRequisition.savedAsDraft') : t('newRequisition.createdSuccessfully')}`,
       })
 
       router.push(`/requisitions/${requisition.id}`)
     } catch (error) {
       console.error("Error saving requisition:", error)
       toast({
-        title: "Error",
-        description: "Failed to save requisition",
+        title: t('newRequisition.error'),
+        description: t('newRequisition.failedToSave'),
         variant: "destructive",
       })
     } finally {
@@ -147,12 +149,12 @@ function NewRequisitionPageContent() {
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-md mx-auto">
           <CardHeader>
-            <CardTitle>Access Error</CardTitle>
+            <CardTitle>{t('newRequisition.accessError')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>Unable to determine your role. Please contact support.</AlertDescription>
+              <AlertDescription>{t('newRequisition.unableToDetermineRole')}</AlertDescription>
             </Alert>
           </CardContent>
         </Card>
@@ -166,12 +168,12 @@ function NewRequisitionPageContent() {
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-md mx-auto">
           <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
+            <CardTitle>{t('newRequisition.accessDenied')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>Only Resident, Procurement, or CEO roles can create a requisition.</AlertDescription>
+              <AlertDescription>{t('newRequisition.onlyResidentProcurementCEO')}</AlertDescription>
             </Alert>
             <div className="mt-4">
               <RoleSelector userRole={userRole} />
@@ -189,12 +191,12 @@ function NewRequisitionPageContent() {
           <Link href="/requisitions">
             <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+              {t('newRequisition.back')}
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Create New Requisition</h1>
-            <p className="text-gray-600 mt-2">Requisition Number: {requisition.requisitionNumber}</p>
+            <h1 className="text-3xl font-bold text-gray-900">{t('newRequisition.title')}</h1>
+            <p className="text-gray-600 mt-2">{t('newRequisition.requisitionNumber')}: {requisition.requisitionNumber}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -206,7 +208,7 @@ function NewRequisitionPageContent() {
             </Button> */}
             <Button onClick={() => handleSave(false)} disabled={isSaving} size="sm">
               <Save className="h-4 w-4 mr-2" />
-              {isSaving ? "Creating..." : "Create Requisition"}
+              {isSaving ? t('newRequisition.creating') : t('newRequisition.createRequisition')}
             </Button>
           </div>
           <RoleSelector userRole={userRole} />
@@ -217,22 +219,22 @@ function NewRequisitionPageContent() {
         {/* Project Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Project Information</CardTitle>
+            <CardTitle>{t('newRequisition.projectInformation')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="projectName">Project Name *</Label>
+                <Label htmlFor="projectName">{t('newRequisition.projectNameRequired')}</Label>
                 <Input
                   id="projectName"
                   value={requisition.projectName}
                   onChange={(e) => handleProjectNameChange(e.target.value)}
-                  placeholder="Enter project name"
+                  placeholder={t('newRequisition.enterProjectName')}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="createdDate">Created Date</Label>
+                <Label htmlFor="createdDate">{t('newRequisition.createdDate')}</Label>
                 <Input id="createdDate" value={requisition.createdDate} disabled />
               </div>
             </div>
@@ -242,7 +244,7 @@ function NewRequisitionPageContent() {
         {/* Material Items */}
         <Card>
           <CardHeader>
-            <CardTitle>Material Items</CardTitle>
+            <CardTitle>{t('newRequisition.materialItems')}</CardTitle>
           </CardHeader>
           <CardContent>
             <MaterialItemsTable
@@ -258,17 +260,17 @@ function NewRequisitionPageContent() {
         {/* Comments */}
         <Card>
           <CardHeader>
-            <CardTitle>Comments</CardTitle>
+            <CardTitle>{t('newRequisition.comments')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="comments">Comments</Label>
+                <Label htmlFor="comments">{t('newRequisition.comments')}</Label>
                 <Textarea
                   id="comments"
                   value={requisition.residentComments}
                   onChange={(e) => handleCommentsChange(e.target.value)}
-                  placeholder="Add any additional comments..."
+                  placeholder={t('newRequisition.addComments')}
                   rows={4}
                 />
               </div>
@@ -280,7 +282,7 @@ function NewRequisitionPageContent() {
         <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
           <Button onClick={() => handleSave(false)} disabled={isSaving} size="lg">
             <Save className="h-5 w-5 mr-2" />
-            {isSaving ? "Creating..." : "Create Requisition"}
+            {isSaving ? t('newRequisition.creating') : t('newRequisition.createRequisition')}
           </Button>
         </div>
 

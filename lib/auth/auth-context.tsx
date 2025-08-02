@@ -185,6 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             role: profileData?.role || 'resident',
             canManageUsers: profileData?.can_manage_users || false,
             isActive: profileData?.is_active ?? true,
+            language: profileData?.language || 'en',
             created_at: session.user.created_at,
             updated_at: session.user.updated_at,
           }

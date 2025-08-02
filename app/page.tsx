@@ -11,9 +11,11 @@ import { Plus, FileText, Users, Activity, Clock, CheckCircle, AlertCircle, Datab
 import Link from "next/link"
 import { useAuth } from "@/lib/auth/auth-context"
 import { ProtectedRoute } from "@/components/auth/protected-route"
+import { useLanguage } from "@/lib/language-context"
 
 function DashboardContent() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [availableProjects, setAvailableProjects] = useState<string[]>([])
@@ -63,7 +65,7 @@ function DashboardContent() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <p className="mt-4 text-gray-600">{t('common.loading')} {t('dashboard.title').toLowerCase()}...</p>
         </div>
       </div>
     )
@@ -74,7 +76,7 @@ function DashboardContent() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <p className="text-gray-600">Failed to load dashboard data</p>
+          <p className="text-gray-600">Failed to load {t('dashboard.title').toLowerCase()} data</p>
         </div>
       </div>
     )
@@ -174,10 +176,10 @@ function DashboardContent() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent mb-3">
-                Dinamiq Construction Dashboard
+                {t('dashboard.title')}
               </h1>
               <p className="text-lg text-gray-600 max-w-3xl">
-                Streamline your construction material requisitions with AI-powered insights and workflows
+                {t('dashboard.subtitle')}
               </p>
             </div>
           </div>
@@ -189,7 +191,7 @@ function DashboardContent() {
         <div className="flex items-center justify-end gap-4">
           {/* Project Filter */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Project:</span>
+            <span className="text-sm text-gray-500">{t('common.project')}:</span>
             <Select
               value={filters.projectId || 'all'}
               onValueChange={(value) => setFilters(prev => ({ ...prev, projectId: value }))}
@@ -198,7 +200,7 @@ function DashboardContent() {
                 <SelectValue placeholder="All Projects" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
+                <SelectItem value="all">{t('common.allProjects')}</SelectItem>
                 {availableProjects.map((project) => (
                   <SelectItem key={project} value={project}>
                     {project}
@@ -210,7 +212,7 @@ function DashboardContent() {
 
           {/* Stage Filter */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Stage:</span>
+            <span className="text-sm text-gray-500">{t('common.stage')}:</span>
             <Select
               value={filters.status || 'all'}
               onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}
@@ -219,13 +221,13 @@ function DashboardContent() {
                 <SelectValue placeholder="All Stages" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Stages</SelectItem>
-                <SelectItem value="resident">Resident</SelectItem>
-                <SelectItem value="procurement">Procurement</SelectItem>
-                <SelectItem value="treasury">Treasury</SelectItem>
-                <SelectItem value="ceo">CEO</SelectItem>
-                <SelectItem value="payment">Payment</SelectItem>
-                <SelectItem value="storekeeper">Storekeeper</SelectItem>
+                <SelectItem value="all">{t('common.allStages')}</SelectItem>
+                <SelectItem value="resident">{t('dashboard.stages.resident')}</SelectItem>
+                <SelectItem value="procurement">{t('dashboard.stages.procurement')}</SelectItem>
+                <SelectItem value="treasury">{t('dashboard.stages.treasury')}</SelectItem>
+                <SelectItem value="ceo">{t('dashboard.stages.ceo')}</SelectItem>
+                <SelectItem value="payment">{t('dashboard.stages.payment')}</SelectItem>
+                <SelectItem value="storekeeper">{t('dashboard.stages.storekeeper')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -241,7 +243,7 @@ function DashboardContent() {
               className="h-8 px-2 text-xs text-gray-500 hover:text-gray-700"
             >
               <X className="h-3 w-3 mr-1" />
-              Clear
+              {t('common.clear')}
             </Button>
           )}
         </div>
@@ -252,8 +254,8 @@ function DashboardContent() {
           {/* Total Submitted */}
           <Card className="border-2 shadow-lg bg-gradient-to-br from-orange-50 to-white">
             <CardHeader>
-              <CardTitle className="text-sm font-semibold text-gray-700">Total $ Submitted</CardTitle>
-              <CardDescription className="text-gray-500">Sum of all requisition item totals</CardDescription>
+              <CardTitle className="text-sm font-semibold text-gray-700">{t('dashboard.stats.totalSubmitted')}</CardTitle>
+              <CardDescription className="text-gray-500">{t('dashboard.descriptions.totalSubmitted')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-orange-700 mb-1">${dashboardStats.totalSubmitted.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
@@ -262,8 +264,8 @@ function DashboardContent() {
           {/* Total Approved */}
           <Card className="border-2 shadow-lg bg-gradient-to-br from-emerald-50 to-white">
             <CardHeader>
-              <CardTitle className="text-sm font-semibold text-gray-700">Total $ Approved</CardTitle>
-              <CardDescription className="text-gray-500">Sum of approved requisition items</CardDescription>
+              <CardTitle className="text-sm font-semibold text-gray-700">{t('dashboard.stats.totalApproved')}</CardTitle>
+              <CardDescription className="text-gray-500">{t('dashboard.descriptions.totalApproved')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-emerald-700 mb-1">${dashboardStats.totalApproved.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
@@ -272,8 +274,8 @@ function DashboardContent() {
           {/* Total $ Spent */}
           <Card className="border-2 shadow-lg bg-gradient-to-br from-green-50 to-white">
             <CardHeader>
-              <CardTitle className="text-sm font-semibold text-gray-700">Total $ Spent</CardTitle>
-              <CardDescription className="text-gray-500">Sum of items with completed payments</CardDescription>
+              <CardTitle className="text-sm font-semibold text-gray-700">{t('dashboard.stats.totalSpent')}</CardTitle>
+              <CardDescription className="text-gray-500">{t('dashboard.descriptions.totalSpent')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-green-700 mb-1">${dashboardStats.totalSpent.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
@@ -282,8 +284,8 @@ function DashboardContent() {
           {/* Active Requisitions */}
           <Card className="border-2 shadow-lg bg-gradient-to-br from-blue-50 to-white">
             <CardHeader>
-              <CardTitle className="text-sm font-semibold text-gray-700">Active Requisitions</CardTitle>
-              <CardDescription className="text-gray-500">Currently in progress</CardDescription>
+              <CardTitle className="text-sm font-semibold text-gray-700">{t('dashboard.stats.activeRequisitions')}</CardTitle>
+              <CardDescription className="text-gray-500">{t('dashboard.descriptions.activeRequisitions')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-blue-700 mb-1">{dashboardStats.activeRequisitions}</div>
@@ -292,8 +294,8 @@ function DashboardContent() {
           {/* Pending Approvals */}
           <Card className="border-2 shadow-lg bg-gradient-to-br from-amber-50 to-white">
             <CardHeader>
-              <CardTitle className="text-sm font-semibold text-gray-700">Pending Approvals</CardTitle>
-              <CardDescription className="text-gray-500">Awaiting your action</CardDescription>
+              <CardTitle className="text-sm font-semibold text-gray-700">{t('dashboard.stats.pendingApprovals')}</CardTitle>
+              <CardDescription className="text-gray-500">{t('dashboard.descriptions.pendingApprovals')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-amber-700 mb-1">{dashboardStats.pendingApprovals}</div>
@@ -302,8 +304,8 @@ function DashboardContent() {
           {/* Requisitions in Past 7 Days */}
           <Card className="border-2 shadow-lg bg-gradient-to-br from-blue-50 to-white">
             <CardHeader>
-              <CardTitle className="text-sm font-semibold text-gray-700">Requisitions (Past 7 Days)</CardTitle>
-              <CardDescription className="text-gray-500">Created in the last week</CardDescription>
+              <CardTitle className="text-sm font-semibold text-gray-700">{t('dashboard.stats.recentRequisitions')}</CardTitle>
+              <CardDescription className="text-gray-500">{t('dashboard.descriptions.recentRequisitions')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-blue-700 mb-1">{dashboardStats.recentCount}</div>
@@ -316,12 +318,12 @@ function DashboardContent() {
           {/* Projects & Requisitions per Project (Bar Chart) */}
           <Card className="border-2 shadow-lg bg-gradient-to-br from-indigo-50 to-white min-h-64">
             <CardHeader>
-              <CardTitle className="text-sm font-semibold text-gray-700">Projects & Requisitions</CardTitle>
-              <CardDescription className="text-gray-500">Number of requisitions per project</CardDescription>
+              <CardTitle className="text-sm font-semibold text-gray-700">{t('dashboard.charts.projectsAndRequisitions')}</CardTitle>
+              <CardDescription className="text-gray-500">{t('dashboard.charts.projectsDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               {dashboardStats.projectStats.length === 0 ? (
-                <div className="text-gray-400 text-sm">No projects found</div>
+                <div className="text-gray-400 text-sm">{t('dashboard.charts.noProjectsFound')}</div>
               ) : (
                 <div className="h-48 flex items-end gap-2 overflow-x-auto overflow-y-hidden pb-2">
                   {(() => {
@@ -341,7 +343,7 @@ function DashboardContent() {
                             opacity: p.count === 0 ? 0.3 : 1, 
                             transition: 'height 0.3s' 
                           }}
-                          title={`${p.count} requisition${p.count !== 1 ? 's' : ''}`}
+                          title={`${p.count} ${p.count !== 1 ? t('requisitions.title') : t('requisitions.title').slice(0, -1)}`}
                         ></div>
                         <div 
                           className="text-xs text-gray-500 mt-1 text-center break-words leading-tight min-h-12 flex items-center justify-center px-1"
@@ -360,8 +362,8 @@ function DashboardContent() {
           {/* Requisitions per Month (Bar Chart) */}
           <Card className="border-2 shadow-lg min-h-64">
             <CardHeader>
-              <CardTitle className="text-sm font-semibold text-gray-700">Requisitions per Month</CardTitle>
-              <CardDescription className="text-gray-500">Last 5 months</CardDescription>
+              <CardTitle className="text-sm font-semibold text-gray-700">{t('dashboard.charts.monthlyRequisitions')}</CardTitle>
+              <CardDescription className="text-gray-500">{t('dashboard.charts.monthlyDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-48 flex items-end gap-2 overflow-x-auto overflow-y-hidden pb-2">
@@ -393,8 +395,8 @@ function DashboardContent() {
           {/* Pie Chart for Requisition Status */}
           <Card className="border-2 shadow-lg bg-gradient-to-br from-pink-50 to-white flex flex-col justify-center min-h-64">
             <CardHeader className="text-left">
-              <CardTitle className="text-sm font-semibold text-gray-700">Requisitions by Status</CardTitle>
-              <CardDescription className="text-gray-500">Current status breakdown</CardDescription>
+              <CardTitle className="text-sm font-semibold text-gray-700">{t('dashboard.charts.statusBreakdown')}</CardTitle>
+              <CardDescription className="text-gray-500">{t('dashboard.charts.statusDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col items-center justify-center w-full min-h-48">
@@ -413,7 +415,7 @@ function DashboardContent() {
                       {pieSlices.map((slice, i) => (
                         <div key={i} className="flex items-center gap-2 text-sm whitespace-nowrap">
                           <span style={{ background: slice.color }} className="inline-block w-3 h-3 rounded-full flex-shrink-0"></span>
-                          <span className="capitalize text-xs">{slice.status.replace(/[-_]/g, ' ')}</span>
+                          <span className="capitalize text-xs">{t(`requisitions.status.${slice.status}`)}</span>
                           <span className="text-gray-500 text-xs">({slice.value})</span>
                         </div>
                       ))}
@@ -424,7 +426,7 @@ function DashboardContent() {
                     <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                       <span className="text-2xl text-gray-400">📊</span>
                     </div>
-                    <p className="text-sm">No status data available</p>
+                    <p className="text-sm">{t('dashboard.recentActivity.noStatusData')}</p>
                   </div>
                 )}
               </div>
@@ -441,9 +443,9 @@ function DashboardContent() {
               <div className="p-2 bg-blue-100 rounded-lg">
                 <Plus className="h-5 w-5 text-blue-600" />
               </div>
-              Quick Actions
+              {t('dashboard.quickActions.title')}
             </CardTitle>
-            <CardDescription className="text-gray-600">Common tasks for your role</CardDescription>
+            <CardDescription className="text-gray-600">{t('dashboard.quickActions.subtitle')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Link href="/requisitions/new">
@@ -452,7 +454,7 @@ function DashboardContent() {
                 variant="default"
               >
                 <Plus className="h-5 w-5 mr-3" />
-                Create New Requisition
+                {t('dashboard.quickActions.createNewRequisition')}
               </Button>
             </Link>
             <Link href="/requisitions">
@@ -461,7 +463,7 @@ function DashboardContent() {
                 variant="outline"
               >
                 <FileText className="h-5 w-5 mr-3" />
-                View All Requisitions
+                {t('dashboard.quickActions.viewAllRequisitions')}
               </Button>
             </Link>
             <Link href="/catalog">
@@ -470,7 +472,7 @@ function DashboardContent() {
                 variant="outline"
               >
                 <Database className="h-5 w-5 mr-3" />
-                View All Materials
+                {t('dashboard.quickActions.viewAllMaterials')}
               </Button>
             </Link>
                           <Link href="/catalog">
@@ -479,7 +481,7 @@ function DashboardContent() {
                   variant="outline"
                 >
                   <Building2 className="h-5 w-5 mr-3" />
-                  View All Suppliers
+                  {t('dashboard.quickActions.viewAllSuppliers')}
                 </Button>
               </Link>
           </CardContent>
@@ -492,17 +494,17 @@ function DashboardContent() {
               <div className="p-2 bg-indigo-100 rounded-lg">
                 <Activity className="h-5 w-5 text-indigo-600" />
               </div>
-              Recent Activity
+              {t('dashboard.recentActivity.title')}
             </CardTitle>
-            <CardDescription className="text-gray-600">Latest updates on your requisitions</CardDescription>
+            <CardDescription className="text-gray-600">{t('dashboard.recentActivity.subtitle')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {recentActivities.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <Activity className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">No recent activity</p>
-                  <p className="text-xs">Create your first requisition to see activity here</p>
+                  <p className="text-sm">{t('dashboard.recentActivity.noActivity')}</p>
+                  <p className="text-xs">{t('dashboard.recentActivity.noActivityDescription')}</p>
                 </div>
               ) : (
                 recentActivities.map((activity) => (
@@ -529,7 +531,7 @@ function DashboardContent() {
                       <p className="text-sm font-medium text-gray-900 leading-5">{activity.title}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                          {activity.stage}
+                          {t(`dashboard.stages.${activity.stage.toLowerCase()}`)}
                         </span>
                         <span className="text-xs text-gray-500">•</span>
                         <span className="text-xs text-gray-500">{activity.time}</span>

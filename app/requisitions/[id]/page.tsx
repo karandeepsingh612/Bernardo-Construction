@@ -27,12 +27,14 @@ import { DatePicker } from "@/components/date-picker"
 import { useAuth } from "@/lib/auth/auth-context"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
+import { useLanguage } from "@/lib/language-context"
 
 function RequisitionDetailPageContent() {
   const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
   const { user, loading: authLoading } = useAuth()
+  const { t } = useLanguage()
   const [requisition, setRequisition] = useState<Requisition | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -213,7 +215,7 @@ function RequisitionDetailPageContent() {
 
     toast({
       title: "Stage Completed",
-      description: `${STAGE_LABELS[stage]} stage completed successfully`,
+      description: `${t(`requisitionDetail.stages.${stage}`)} stage completed successfully`,
     })
 
       // Reset states
@@ -414,7 +416,7 @@ function RequisitionDetailPageContent() {
       <div className="container mx-auto py-6">
         <div className="flex items-center justify-center space-x-2">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="text-gray-600">Loading requisition...</span>
+          <span className="text-gray-600">{t('requisitionDetail.messages.loading')}</span>
         </div>
         <LoadingSkeleton type="page" />
       </div>
@@ -427,12 +429,12 @@ function RequisitionDetailPageContent() {
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-md mx-auto">
           <CardHeader>
-            <CardTitle>Access Error</CardTitle>
+            <CardTitle>{t('requisitionDetail.messages.accessError')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>Unable to determine your role. Please contact support.</AlertDescription>
+              <AlertDescription>{t('requisitionDetail.messages.unableToDetermineRole')}</AlertDescription>
             </Alert>
           </CardContent>
         </Card>
@@ -445,7 +447,7 @@ function RequisitionDetailPageContent() {
       <div className="container mx-auto py-6">
         <Card>
           <CardContent className="py-12 text-center">
-            <div className="text-gray-500">Requisition not found</div>
+            <div className="text-gray-500">{t('requisitionDetail.messages.notFound')}</div>
           </CardContent>
         </Card>
       </div>
@@ -460,7 +462,7 @@ function RequisitionDetailPageContent() {
           <Link href="/requisitions">
             <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+              {t('requisitionDetail.backToRequisitions')}
             </Button>
           </Link>
           <div className="flex-1">
@@ -470,11 +472,11 @@ function RequisitionDetailPageContent() {
                 {requisition.requisitionNumber}
               </h1>
               <Badge className={cn("text-sm font-medium", getStatusColor(requisition.status))}>
-                {STATUS_LABELS[requisition.status]}
+                {t(`requisitions.status.${requisition.status}`)}
               </Badge>
             </div>
             {/* Project Info */}
-            <p className="text-gray-600 text-sm">Project: {requisition.projectName}</p>
+            <p className="text-gray-600 text-sm">{t('common.project')}: {requisition.projectName}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -494,12 +496,12 @@ function RequisitionDetailPageContent() {
                   handleStageComplete(requisition.currentStage, comments);
                 }}
               >
-                Complete Stage
+                {t('requisitionDetail.actions.completeStage')}
               </Button>
             )}
           <Button onClick={handleSave} disabled={isSaving}>
             <Save className="h-4 w-4 mr-2" />
-            {isSaving ? "Saving..." : "Save"}
+            {isSaving ? t('common.loading') : t('common.save')}
           </Button>
           </div>
           <RoleSelector userRole={userRole} />
@@ -512,7 +514,7 @@ function RequisitionDetailPageContent() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              <CardTitle>Details</CardTitle>
+              <CardTitle>{t('requisitionDetail.details')}</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -522,7 +524,7 @@ function RequisitionDetailPageContent() {
                 <div className="flex items-center gap-2 h-9">
                   <Calendar className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <div>
-                    <span className="font-medium">Created:</span>{" "}
+                    <span className="font-medium">{t('requisitionDetail.created')}:</span>{" "}
                     {(() => {
                       const [year, month, day] = requisition.createdDate.split('T')[0].split('-');
                       return `${month}/${day}/${year}`;
@@ -532,14 +534,14 @@ function RequisitionDetailPageContent() {
                 <div className="flex items-center gap-2 h-9 mt-4">
                   <Briefcase className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <div>
-                    <span className="font-medium">Project Name:</span>{" "}
+                    <span className="font-medium">{t('requisitionDetail.projectName')}:</span>{" "}
                     {requisition.projectName}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 h-9 mt-4">
                   <User className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <div>
-                    <span className="font-medium">Your Role:</span>{" "}
+                    <span className="font-medium">{t('requisitionDetail.yourRole')}:</span>{" "}
                     <Badge className={getRoleColor(userRole)}>
                       {getRoleDisplayName(userRole)}
                     </Badge>
@@ -552,14 +554,14 @@ function RequisitionDetailPageContent() {
                 <div className="flex items-center gap-2 h-9">
                   <GitBranch className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <div>
-                    <span className="font-medium">Current Stage:</span>{" "}
-                    {STAGE_LABELS[requisition.currentStage]}
+                    <span className="font-medium">{t('requisitionDetail.currentStage')}:</span>{" "}
+                    {t(`requisitionDetail.stages.${requisition.currentStage}`)}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 h-9 mt-4">
                   <CalendarRange className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <div className="flex items-center gap-2">
-                    <span className="font-medium whitespace-nowrap">Week:</span>
+                    <span className="font-medium whitespace-nowrap">{t('requisitionDetail.week')}:</span>
                     <DatePicker 
                       date={week} 
                       setDate={setWeek}
@@ -574,14 +576,14 @@ function RequisitionDetailPageContent() {
                 <div className="flex items-center gap-2 h-9">
                   <ListChecks className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <div>
-                    <span className="font-medium">Items:</span>{" "}
+                    <span className="font-medium">{t('requisitionDetail.items')}:</span>{" "}
                     {requisition.items.length}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 h-9 mt-4">
                   <Files className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <div>
-                    <span className="font-medium">Documents:</span>{" "}
+                    <span className="font-medium">{t('requisitionDetail.documents')}:</span>{" "}
                     {requisition.documents.length}
                   </div>
                 </div>
@@ -592,14 +594,14 @@ function RequisitionDetailPageContent() {
                 <div className="flex items-center gap-2 h-9">
                   <DollarSign className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <div>
-                    <span className="font-medium">Total Submitted:</span>{" "}$
+                    <span className="font-medium">{t('requisitionDetail.totalSubmitted')}:</span>{" "}$
                     {requisition.items.reduce((sum, item) => sum + (item.total || 0), 0).toFixed(2)}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 h-9 mt-4">
                   <DollarSign className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <div>
-                    <span className="font-medium">Total Approved:</span>{" "}$
+                    <span className="font-medium">{t('requisitionDetail.totalApproved')}:</span>{" "}$
                     {requisition.items.reduce((sum, item) => sum + (item.approvalStatus === "approved" ? (item.total || 0) : 0), 0).toFixed(2)}
                   </div>
                 </div>
@@ -611,7 +613,7 @@ function RequisitionDetailPageContent() {
         {/* Stage Progress */}
         <Card>
           <CardHeader>
-            <CardTitle>Workflow Progress</CardTitle>
+            <CardTitle>{t('requisitionDetail.workflowStages')}</CardTitle>
           </CardHeader>
           <CardContent>
             <StageProgress currentStage={requisition.currentStage} completedStages={getCompletedStages()} />
@@ -621,7 +623,7 @@ function RequisitionDetailPageContent() {
         {/* Material Items Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Material Items</CardTitle>
+            <CardTitle>{t('requisitionDetail.materials')}</CardTitle>
           </CardHeader>
           <CardContent>
             <MaterialItemsTable
@@ -644,7 +646,7 @@ function RequisitionDetailPageContent() {
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <BookmarkIcon className="h-5 w-5 text-purple-500" />
-                  <span>Saved for Later ({requisition.items.filter(item => item.approvalStatus === "Save for Later").length})</span>
+                  <span>{t('requisitionDetail.status.saveForLater')} ({requisition.items.filter(item => item.approvalStatus === "Save for Later").length})</span>
                 </div>
                 {savedForLaterExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
               </CardTitle>
@@ -660,20 +662,20 @@ function RequisitionDetailPageContent() {
                           <div className="flex items-center gap-2 mb-2">
                             <span className="font-medium">#{index + 1}</span>
                             <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200">
-                              Saved for Later
+                              {t('requisitionDetail.status.saveForLater')}
                             </Badge>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                             <div>
-                              <span className="font-medium text-gray-600">Description:</span>
+                              <span className="font-medium text-gray-600">{t('requisitionDetail.description')}:</span>
                               <p>{item.description}</p>
                             </div>
                             <div>
-                              <span className="font-medium text-gray-600">Amount:</span>
+                              <span className="font-medium text-gray-600">{t('requisitionDetail.quantity')}:</span>
                               <p>{item.amount} {item.unit}</p>
                             </div>
                             <div>
-                              <span className="font-medium text-gray-600">Total:</span>
+                              <span className="font-medium text-gray-600">{t('requisitionDetail.totalAmount')}:</span>
                               <p>${item.total?.toFixed(2) || '0.00'}</p>
                             </div>
                           </div>
@@ -703,7 +705,7 @@ function RequisitionDetailPageContent() {
             onClick={() => setCommentsExpanded(!commentsExpanded)}
           >
             <CardTitle className="flex items-center justify-between">
-              <span>Stage Comments</span>
+              <span>{t('requisitionDetail.messages.stageComments')}</span>
               {commentsExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </CardTitle>
           </CardHeader>
@@ -747,12 +749,12 @@ function RequisitionDetailPageContent() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-red-500" />
-                Validation Errors
+                {t('requisitionDetail.messages.validationErrors')}
               </DialogTitle>
             </DialogHeader>
             <div className="py-4">
               <p className="text-sm text-gray-600 mb-4">
-                Please fix the following issues before completing the stage:
+                {t('requisitionDetail.messages.fixIssuesBeforeCompleting')}
               </p>
               <ul className="list-disc list-inside space-y-1">
                 {getValidationErrors().map((error, index) => (
@@ -762,14 +764,14 @@ function RequisitionDetailPageContent() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowValidationErrors(false)}>
-                Close
+                {t('common.close')}
               </Button>
               <Button onClick={() => {
                 setShowValidationErrors(false);
                 // Scroll to bottom panel
                 bottomPanelRef.current?.scrollIntoView({ behavior: 'smooth' });
               }}>
-                View Details
+                {t('requisitionDetail.messages.viewDetails')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -781,15 +783,15 @@ function RequisitionDetailPageContent() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-yellow-500" />
-                No Documents Uploaded
+                {t('requisitionDetail.messages.noDocumentsUploaded')}
               </DialogTitle>
             </DialogHeader>
             <div className="py-4">
               <p className="text-sm text-gray-600 mb-4">
-                You are marking the <strong>{pendingTopCompletion?.stage ? STAGE_LABELS[pendingTopCompletion.stage] : ''}</strong> stage as complete, but no documents have been uploaded for this stage.
+                {t('requisitionDetail.messages.noDocumentsWarning').replace('{stage}', pendingTopCompletion?.stage ? t(`requisitionDetail.stages.${pendingTopCompletion.stage}`) : '')}
               </p>
               <p className="text-sm text-gray-600">
-                It is recommended to upload relevant documents before completing the stage. However, you can still proceed if needed.
+                {t('requisitionDetail.messages.recommendedToUpload')}
               </p>
             </div>
             <DialogFooter>
@@ -797,14 +799,14 @@ function RequisitionDetailPageContent() {
                 setPendingTopCompletion(null)
                 setShowTopDocumentWarning(false)
               }}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button onClick={() => {
                 if (pendingTopCompletion) {
                   handleStageComplete(pendingTopCompletion.stage, pendingTopCompletion.comments, true)
                 }
               }}>
-                Complete Stage Anyway
+                {t('requisitionDetail.messages.completeStageAnyway')}
               </Button>
             </DialogFooter>
           </DialogContent>

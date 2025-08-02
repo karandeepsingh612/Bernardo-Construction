@@ -9,6 +9,7 @@ import { Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth/auth-context";
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { useLanguage } from "@/lib/language-context";
 
 const PAGE_SIZE = 10;
 
@@ -24,6 +25,7 @@ type CatalogItem = {
 
 function CatalogPageContent() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -187,7 +189,7 @@ function CatalogPageContent() {
         setNewItem({ classification: '', description: '', unit: '' });
         setModalOpen(false);
       } else {
-        setErrorMsg('Failed to add material. Please try again.');
+        setErrorMsg(t('catalog.failedToAddMaterial'));
         console.error('Supabase insert error:', error);
       }
       setLoading(false);
@@ -197,7 +199,7 @@ function CatalogPageContent() {
       
       // Validate RFC length - must be exactly 12 characters
       if (newSupplier.rfc.length !== 12) {
-        setErrorMsg('RFC must be exactly 12 characters long.');
+        setErrorMsg(t('catalog.rfcLengthError'));
         return;
       }
       
@@ -220,7 +222,7 @@ function CatalogPageContent() {
         setNewSupplier({ name: '', rfc: '' });
         setModalOpen(false);
       } else {
-        setErrorMsg('Failed to add supplier. Please try again.');
+        setErrorMsg(t('catalog.failedToAddSupplier'));
         console.error('Supabase insert error:', error);
       }
       setLoading(false);
@@ -273,7 +275,7 @@ function CatalogPageContent() {
   const classSuggestions = useMemo(() => getSuggestions(catalog, 'classification', newItem.classification || ''), [catalog, newItem.classification]);
   const descSuggestions = useMemo(() => getSuggestions(catalog, 'description', newItem.description || ''), [catalog, newItem.description]);
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
+  if (loading) return <div className="p-8 text-center">{t('catalog.loading')}</div>;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -281,7 +283,7 @@ function CatalogPageContent() {
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex flex-col gap-2">
             <CardTitle className="text-2xl font-bold">
-              {activeTab === 'materials' ? 'Material Catalog' : 'Supplier Catalog'}
+              {activeTab === 'materials' ? t('catalog.title') : t('catalog.supplierTitle')}
             </CardTitle>
             <div className="flex gap-1">
               <button
@@ -292,7 +294,7 @@ function CatalogPageContent() {
                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                Materials
+                {t('catalog.materials')}
               </button>
               <button
                 onClick={() => setActiveTab('suppliers')}
@@ -302,13 +304,13 @@ function CatalogPageContent() {
                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                Suppliers
+                {t('catalog.suppliers')}
               </button>
             </div>
           </div>
           <div className="flex flex-col md:flex-row gap-2 md:items-center w-full md:w-auto">
             <Input
-              placeholder={activeTab === 'materials' ? "Search materials..." : "Search suppliers..."}
+              placeholder={activeTab === 'materials' ? t('catalog.searchMaterials') : t('catalog.searchSuppliers')}
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1); }}
               className="w-full md:w-64"
@@ -316,10 +318,10 @@ function CatalogPageContent() {
             {activeTab === 'materials' && (
               <Select value={classificationFilter} onValueChange={val => { setClassificationFilter(val); setPage(1); }}>
                 <SelectTrigger className="w-48">
-                  <SelectValue placeholder="All Classifications" />
+                  <SelectValue placeholder={t('catalog.allClassifications')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Classifications</SelectItem>
+                  <SelectItem value="all">{t('catalog.allClassifications')}</SelectItem>
                   {classifications.map(c => (
                     <SelectItem key={c} value={c}>{c}</SelectItem>
                   ))}
@@ -328,7 +330,7 @@ function CatalogPageContent() {
             )}
             <Button onClick={() => setModalOpen(true)} className="ml-auto">
               <Plus className="h-4 w-4 mr-2" />
-              {activeTab === 'materials' ? 'Material' : 'Supplier'}
+              {activeTab === 'materials' ? t('catalog.addMaterial') : t('catalog.addSupplier')}
             </Button>
           </div>
         </CardHeader>
@@ -338,18 +340,18 @@ function CatalogPageContent() {
               <thead className="bg-gray-50">
                 {activeTab === 'materials' ? (
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("classification")}>Classification {sortBy === "classification" && (sortDir === "asc" ? "▲" : "▼")}</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("description")}>Description {sortBy === "description" && (sortDir === "asc" ? "▲" : "▼")}</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("unit")}>Unit {sortBy === "unit" && (sortDir === "asc" ? "▲" : "▼")}</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("created_at")}>Created On {sortBy === "created_at" && (sortDir === "asc" ? "▲" : "▼")}</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("created_by")}>Created By {sortBy === "created_by" && (sortDir === "asc" ? "▲" : "▼")}</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("classification")}>{t('catalog.classification')} {sortBy === "classification" && (sortDir === "asc" ? "▲" : "▼")}</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("description")}>{t('catalog.description')} {sortBy === "description" && (sortDir === "asc" ? "▲" : "▼")}</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("unit")}>{t('catalog.unit')} {sortBy === "unit" && (sortDir === "asc" ? "▲" : "▼")}</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("created_at")}>{t('catalog.createdOn')} {sortBy === "created_at" && (sortDir === "asc" ? "▲" : "▼")}</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("created_by")}>{t('catalog.createdBy')} {sortBy === "created_by" && (sortDir === "asc" ? "▲" : "▼")}</th>
                   </tr>
                 ) : (
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("name")}>Name {sortBy === "name" && (sortDir === "asc" ? "▲" : "▼")}</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("rfc")}>RFC {sortBy === "rfc" && (sortDir === "asc" ? "▲" : "▼")}</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("created_at")}>Created On {sortBy === "created_at" && (sortDir === "asc" ? "▲" : "▼")}</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("created_by")}>Created By {sortBy === "created_by" && (sortDir === "asc" ? "▲" : "▼")}</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("name")}>{t('catalog.name')} {sortBy === "name" && (sortDir === "asc" ? "▲" : "▼")}</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("rfc")}>{t('catalog.rfc')} {sortBy === "rfc" && (sortDir === "asc" ? "▲" : "▼")}</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("created_at")}>{t('catalog.createdOn')} {sortBy === "created_at" && (sortDir === "asc" ? "▲" : "▼")}</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort("created_by")}>{t('catalog.createdBy')} {sortBy === "created_by" && (sortDir === "asc" ? "▲" : "▼")}</th>
                   </tr>
                 )}
               </thead>
@@ -384,7 +386,7 @@ function CatalogPageContent() {
                           <Input
                             value={newItem.classification}
                             onChange={e => setNewItem({ ...newItem, classification: e.target.value })}
-                            placeholder="Classification"
+                            placeholder={t('catalog.classification')}
                             className="w-full"
                           />
                         </td>
@@ -392,7 +394,7 @@ function CatalogPageContent() {
                           <Input
                             value={newItem.description}
                             onChange={e => setNewItem({ ...newItem, description: e.target.value })}
-                            placeholder="Description"
+                            placeholder={t('catalog.description')}
                             className="w-full"
                           />
                         </td>
@@ -400,11 +402,11 @@ function CatalogPageContent() {
                           <Input
                             value={newItem.unit}
                             onChange={e => setNewItem({ ...newItem, unit: e.target.value })}
-                            placeholder="Unit"
+                            placeholder={t('catalog.unit')}
                             className="w-full"
                           />
-                          <Button size="sm" onClick={handleAdd} className="bg-green-600 hover:bg-green-700 text-white">Save</Button>
-                          <Button size="sm" variant="outline" onClick={() => setAdding(false)}>Cancel</Button>
+                          <Button size="sm" onClick={handleAdd} className="bg-green-600 hover:bg-green-700 text-white">{t('catalog.save')}</Button>
+                          <Button size="sm" variant="outline" onClick={() => setAdding(false)}>{t('catalog.cancel')}</Button>
                         </td>
                         <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">-</td>
                         <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">-</td>
@@ -438,7 +440,7 @@ function CatalogPageContent() {
                 {paginated.length === 0 && !adding && (
                   <tr>
                     <td colSpan={activeTab === 'materials' ? 5 : 4} className="text-center py-8 text-gray-400">
-                      No {activeTab === 'materials' ? 'materials' : 'suppliers'} found.
+                      {activeTab === 'materials' ? t('catalog.noMaterialsFound') : t('catalog.noSuppliersFound')}
                     </td>
                   </tr>
                 )}
@@ -448,13 +450,13 @@ function CatalogPageContent() {
           {/* Pagination Controls */}
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mt-4 px-2 py-3 bg-gray-50 rounded-b-lg border-t border-gray-200">
             <span className="text-sm text-gray-600">
-              Showing {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} results
+              {t('catalog.showing')} {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1} {t('catalog.to')} {Math.min(page * PAGE_SIZE, filtered.length)} {t('catalog.of')} {filtered.length} {t('catalog.results')}
             </span>
             <div className="flex-1 flex items-center justify-center gap-4">
               <Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage(page - 1)}>
                 &lt;
               </Button>
-              <span className="text-sm font-medium">Page {page} of {totalPages}</span>
+              <span className="text-sm font-medium">{t('catalog.page')} {page} {t('catalog.of')} {totalPages}</span>
               <Button size="sm" variant="outline" disabled={page === totalPages || totalPages === 0} onClick={() => setPage(page + 1)}>
                 &gt;
               </Button>
@@ -469,7 +471,7 @@ function CatalogPageContent() {
               }}
               className="flex items-center gap-2"
             >
-              <span className="text-sm">Go to page:</span>
+              <span className="text-sm">{t('catalog.goToPage')}</span>
               <input
                 name="goto"
                 type="number"
@@ -479,7 +481,7 @@ function CatalogPageContent() {
                 className="w-14 px-2 py-1 border rounded text-sm"
                 style={{ minWidth: 0 }}
               />
-              <Button size="sm" type="submit" variant="outline">Go</Button>
+              <Button size="sm" type="submit" variant="outline">{t('catalog.go')}</Button>
             </form>
           </div>
         </CardContent>
@@ -489,7 +491,7 @@ function CatalogPageContent() {
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add {activeTab === 'materials' ? 'Material' : 'Supplier'}</DialogTitle>
+            <DialogTitle>{activeTab === 'materials' ? t('catalog.addMaterialTitle') : t('catalog.addSupplierTitle')}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4">
             {activeTab === 'materials' ? (
@@ -502,7 +504,7 @@ function CatalogPageContent() {
                     onChange={e => { setNewItem({ ...newItem, classification: e.target.value }); setShowClassSuggestions(true); }}
                     onFocus={() => setShowClassSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowClassSuggestions(false), 100)}
-                    placeholder="Classification"
+                    placeholder={t('catalog.classification')}
                     autoComplete="off"
                   />
                   {showClassSuggestions && classSuggestions.length > 0 && (
@@ -520,7 +522,7 @@ function CatalogPageContent() {
                     onChange={e => { setNewItem({ ...newItem, description: e.target.value }); setShowDescSuggestions(true); }}
                     onFocus={() => setShowDescSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowDescSuggestions(false), 100)}
-                    placeholder="Description"
+                    placeholder={t('catalog.description')}
                     autoComplete="off"
                   />
                   {showDescSuggestions && descSuggestions.length > 0 && (
@@ -532,9 +534,9 @@ function CatalogPageContent() {
                   )}
                   {typeof newItem.description === 'string' && newItem.description.length > 0 && (
                     checkingDuplicate ? (
-                      <span className="text-xs text-gray-500">Checking for duplicates...</span>
+                      <span className="text-xs text-gray-500">{t('catalog.checkingDuplicates')}</span>
                     ) : duplicate ? (
-                      <span className="text-xs text-red-600">A material with this description already exists.</span>
+                      <span className="text-xs text-red-600">{t('catalog.duplicateDescription')}</span>
                     ) : null
                   )}
                 </div>
@@ -542,7 +544,7 @@ function CatalogPageContent() {
                 <Input
                   value={newItem.unit}
                   onChange={e => setNewItem({ ...newItem, unit: e.target.value })}
-                  placeholder="Unit"
+                  placeholder={t('catalog.unit')}
                 />
               </>
             ) : (
@@ -551,13 +553,13 @@ function CatalogPageContent() {
                 <Input
                   value={newSupplier.name}
                   onChange={e => setNewSupplier({ ...newSupplier, name: e.target.value })}
-                  placeholder="Supplier Name"
+                  placeholder={t('catalog.supplierName')}
                   autoComplete="off"
                 />
                 <Input
                   value={newSupplier.rfc}
                   onChange={e => setNewSupplier({ ...newSupplier, rfc: e.target.value })}
-                  placeholder="Supplier RFC (12 characters)"
+                  placeholder={t('catalog.supplierRfc')}
                   autoComplete="off"
                   maxLength={12}
                 />
@@ -575,9 +577,9 @@ function CatalogPageContent() {
                   : (!newSupplier.name || !newSupplier.rfc || newSupplier.rfc.length !== 12)
               }
             >
-              Save
+              {t('catalog.save')}
             </Button>
-            <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setModalOpen(false)}>{t('catalog.cancel')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

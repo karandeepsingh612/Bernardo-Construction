@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { AuthLayout } from '@/components/auth/auth-layout'
+import { useLanguage } from '@/lib/language-context'
 
 const resetPasswordSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
@@ -30,6 +31,7 @@ function ResetPasswordPageContent() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { t } = useLanguage()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -67,8 +69,8 @@ function ResetPasswordPageContent() {
   if (isSubmitted) {
     return (
       <AuthLayout
-        title="Password Reset Success"
-        subtitle="Your password has been updated"
+        title={t('auth.resetPassword.successTitle')}
+        subtitle={t('auth.resetPassword.successSubtitle')}
       >
         <div className="text-center space-y-4">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
@@ -77,10 +79,10 @@ function ResetPasswordPageContent() {
           
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Password updated successfully!
+              {t('auth.resetPassword.successMessage')}
             </h3>
             <p className="text-gray-600">
-              Your password has been reset. You can now sign in with your new password.
+              {t('auth.resetPassword.successDescription')}
             </p>
           </div>
 
@@ -89,7 +91,7 @@ function ResetPasswordPageContent() {
               onClick={() => router.push('/auth/signin')}
               className="w-full"
             >
-              Sign In
+              {t('auth.resetPassword.signInButton')}
             </Button>
           </div>
         </div>
@@ -99,8 +101,8 @@ function ResetPasswordPageContent() {
 
   return (
     <AuthLayout
-      title="Reset Password"
-      subtitle="Enter your new password"
+      title={t('auth.resetPassword.title')}
+      subtitle={t('auth.resetPassword.subtitle')}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {error && (
@@ -110,12 +112,12 @@ function ResetPasswordPageContent() {
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="password">New Password</Label>
+          <Label htmlFor="password">{t('auth.resetPassword.password')}</Label>
           <div className="relative">
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
-              placeholder="Enter your new password"
+              placeholder={t('auth.resetPassword.passwordPlaceholder')}
               {...register('password')}
               className={errors.password ? 'border-red-500' : ''}
             />
@@ -133,12 +135,12 @@ function ResetPasswordPageContent() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm New Password</Label>
+          <Label htmlFor="confirmPassword">{t('auth.resetPassword.confirmPassword')}</Label>
           <div className="relative">
             <Input
               id="confirmPassword"
               type={showConfirmPassword ? 'text' : 'password'}
-              placeholder="Confirm your new password"
+              placeholder={t('auth.resetPassword.confirmPasswordPlaceholder')}
               {...register('confirmPassword')}
               className={errors.confirmPassword ? 'border-red-500' : ''}
             />
@@ -163,10 +165,10 @@ function ResetPasswordPageContent() {
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Updating password...
+              {t('auth.resetPassword.resetting')}
             </>
           ) : (
-            'Update Password'
+            t('auth.resetPassword.resetButton')
           )}
         </Button>
       </form>

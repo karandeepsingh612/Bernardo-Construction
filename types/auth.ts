@@ -5,6 +5,7 @@ export interface AuthUser {
   role?: 'resident' | 'procurement' | 'treasury' | 'ceo' | 'storekeeper'
   canManageUsers?: boolean
   isActive?: boolean
+  language?: 'en' | 'es'
   created_at?: string
   updated_at?: string
 }

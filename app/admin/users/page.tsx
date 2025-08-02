@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth/auth-context'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
+import { useLanguage } from '@/lib/language-context'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -74,6 +75,7 @@ function UserManagementPageContent() {
   const { user } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
+  const { t } = useLanguage()
   const [users, setUsers] = useState<UserProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -197,14 +199,14 @@ function UserManagementPageContent() {
       setEditingRole('')
       
       toast({
-        title: "Role Updated",
-        description: `User role has been successfully updated to ${getRoleDisplayName(editingRole as any)}.`,
+        title: t('userManagement.messages.roleUpdated'),
+        description: t('userManagement.messages.roleUpdateSuccess', { role: t(`userManagement.roles.${editingRole}`) }),
       })
     } catch (error) {
       console.error('Error updating user role:', error)
       toast({
-        title: "Error",
-        description: "Failed to update user role. Please try again.",
+        title: t('userManagement.messages.error'),
+        description: t('userManagement.messages.updateRoleError'),
         variant: "destructive",
       })
     } finally {
@@ -216,8 +218,8 @@ function UserManagementPageContent() {
     // Prevent deactivating yourself
     if (userProfile.id === user?.id) {
       toast({
-        title: "Cannot Deactivate",
-        description: "You cannot deactivate your own account.",
+        title: t('userManagement.messages.cannotDeactivateSelf'),
+        description: t('userManagement.messages.cannotDeactivateSelfDescription'),
         variant: "destructive",
       })
       return
@@ -246,8 +248,8 @@ function UserManagementPageContent() {
       if (error) {
         console.error('Error updating user status:', error)
         toast({
-          title: "Error",
-          description: "Failed to update user status. Please try again.",
+          title: t('userManagement.messages.error'),
+          description: t('userManagement.messages.updateStatusError'),
           variant: "destructive",
         })
         return
@@ -263,16 +265,16 @@ function UserManagementPageContent() {
       )
 
       toast({
-        title: "User Status Updated",
-        description: `User has been ${newStatus ? 'activated' : 'deactivated'} successfully.`,
+        title: t('userManagement.messages.userStatusUpdated'),
+        description: newStatus ? t('userManagement.messages.userActivated') : t('userManagement.messages.userDeactivated'),
       })
     } catch (error) {
       console.error('Error updating user status:', error)
-      toast({
-        title: "Error",
-        description: "Failed to update user status. Please try again.",
-        variant: "destructive",
-      })
+              toast({
+          title: t('userManagement.messages.error'),
+          description: t('userManagement.messages.updateStatusError'),
+          variant: "destructive",
+        })
     } finally {
       setDeactivatingUserId(null)
     }
@@ -301,8 +303,8 @@ function UserManagementPageContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">User Management</h1>
-          <p className="text-gray-600">Manage system users and their roles</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('userManagement.title')}</h1>
+          <p className="text-gray-600">{t('userManagement.subtitle')}</p>
         </div>
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -310,7 +312,7 @@ function UserManagementPageContent() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Users</p>
+                  <p className="text-sm font-medium text-gray-600">{t('userManagement.stats.totalUsers')}</p>
                   <p className="text-2xl font-bold text-gray-900">{users.length}</p>
                 </div>
                 <Users className="h-8 w-8 text-blue-600" />
@@ -322,7 +324,7 @@ function UserManagementPageContent() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Active Users</p>
+                  <p className="text-sm font-medium text-gray-600">{t('userManagement.stats.activeUsers')}</p>
                   <p className="text-2xl font-bold text-green-600">
                     {users.filter(u => u.is_active).length}
                   </p>
@@ -336,7 +338,7 @@ function UserManagementPageContent() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Admin Users</p>
+                  <p className="text-sm font-medium text-gray-600">{t('userManagement.stats.adminUsers')}</p>
                   <p className="text-2xl font-bold text-purple-600">
                     {users.filter(u => u.can_manage_users).length}
                   </p>
@@ -350,7 +352,7 @@ function UserManagementPageContent() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">New This Week</p>
+                  <p className="text-sm font-medium text-gray-600">{t('userManagement.stats.newThisWeek')}</p>
                   <p className="text-2xl font-bold text-orange-600">
                     {users.filter(u => {
                       const weekAgo = new Date()
@@ -372,7 +374,7 @@ function UserManagementPageContent() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search users by name or email..."
+                  placeholder={t('userManagement.search.placeholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500"
@@ -385,15 +387,15 @@ function UserManagementPageContent() {
                 onValueChange={(value) => setFilterRole(value)}
               >
                 <SelectTrigger className="w-full bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500">
-                  <SelectValue placeholder="All Roles" />
+                  <SelectValue placeholder={t('userManagement.search.allRoles')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="resident">Resident</SelectItem>
-                  <SelectItem value="procurement">Procurement</SelectItem>
-                  <SelectItem value="treasury">Treasury</SelectItem>
-                  <SelectItem value="ceo">CEO</SelectItem>
-                  <SelectItem value="storekeeper">Storekeeper</SelectItem>
+                  <SelectItem value="all">{t('userManagement.search.allRoles')}</SelectItem>
+                  <SelectItem value="resident">{t('userManagement.roles.resident')}</SelectItem>
+                  <SelectItem value="procurement">{t('userManagement.roles.procurement')}</SelectItem>
+                  <SelectItem value="treasury">{t('userManagement.roles.treasury')}</SelectItem>
+                  <SelectItem value="ceo">{t('userManagement.roles.ceo')}</SelectItem>
+                  <SelectItem value="storekeeper">{t('userManagement.roles.storekeeper')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -405,7 +407,7 @@ function UserManagementPageContent() {
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <Users className="h-5 w-5" />
-              System Users ({filteredUsers.length})
+              {t('userManagement.table.systemUsers')} ({filteredUsers.length})
             </h2>
           </div>
           <div className="p-6">
@@ -418,13 +420,13 @@ function UserManagementPageContent() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>User</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Admin</TableHead>
-                      <TableHead>Joined</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>{t('userManagement.table.user')}</TableHead>
+                      <TableHead>{t('userManagement.table.email')}</TableHead>
+                      <TableHead>{t('userManagement.table.role')}</TableHead>
+                      <TableHead>{t('userManagement.table.status')}</TableHead>
+                      <TableHead>{t('userManagement.table.admin')}</TableHead>
+                      <TableHead>{t('userManagement.table.joined')}</TableHead>
+                      <TableHead>{t('userManagement.table.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -467,11 +469,11 @@ function UserManagementPageContent() {
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="resident">Resident</SelectItem>
-                                  <SelectItem value="procurement">Procurement</SelectItem>
-                                  <SelectItem value="treasury">Treasury</SelectItem>
-                                  <SelectItem value="ceo">CEO</SelectItem>
-                                  <SelectItem value="storekeeper">Storekeeper</SelectItem>
+                                  <SelectItem value="resident">{t('userManagement.roles.resident')}</SelectItem>
+                                  <SelectItem value="procurement">{t('userManagement.roles.procurement')}</SelectItem>
+                                  <SelectItem value="treasury">{t('userManagement.roles.treasury')}</SelectItem>
+                                  <SelectItem value="ceo">{t('userManagement.roles.ceo')}</SelectItem>
+                                  <SelectItem value="storekeeper">{t('userManagement.roles.storekeeper')}</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
@@ -480,7 +482,7 @@ function UserManagementPageContent() {
                               variant="outline" 
                               className={`${getRoleColor(userProfile.role)}`}
                             >
-                              {getRoleDisplayName(userProfile.role)}
+                              {t(`userManagement.roles.${userProfile.role}`)}
                             </Badge>
                           )}
                         </TableCell>
@@ -488,12 +490,12 @@ function UserManagementPageContent() {
                           {userProfile.is_active ? (
                             <div className="flex items-center gap-2">
                               <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="text-sm text-green-600">Active</span>
+                              <span className="text-sm text-green-600">{t('userManagement.status.active')}</span>
                             </div>
                           ) : (
                             <div className="flex items-center gap-2">
                               <XCircle className="h-4 w-4 text-red-600" />
-                              <span className="text-sm text-red-600 font-medium">Deactivated</span>
+                              <span className="text-sm text-red-600 font-medium">{t('userManagement.status.deactivated')}</span>
                             </div>
                           )}
                         </TableCell>
@@ -501,10 +503,10 @@ function UserManagementPageContent() {
                           {userProfile.can_manage_users ? (
                             <div className="flex items-center gap-2">
                               <Shield className="h-4 w-4 text-purple-600" />
-                              <span className="text-sm text-purple-600">Admin</span>
+                              <span className="text-sm text-purple-600">{t('userManagement.table.admin')}</span>
                             </div>
                           ) : (
-                            <span className="text-sm text-gray-500">User</span>
+                            <span className="text-sm text-gray-500">{t('userManagement.table.user')}</span>
                           )}
                         </TableCell>
                         <TableCell>
@@ -537,7 +539,7 @@ function UserManagementPageContent() {
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                      <p>Save role changes</p>
+                                      <p>{t('userManagement.actions.saveRoleChanges')}</p>
                                     </TooltipContent>
                                   </Tooltip>
                                   <Tooltip>
@@ -553,7 +555,7 @@ function UserManagementPageContent() {
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                      <p>Cancel editing</p>
+                                      <p>{t('userManagement.actions.cancelEditing')}</p>
                                     </TooltipContent>
                                   </Tooltip>
                                 </>
@@ -571,7 +573,7 @@ function UserManagementPageContent() {
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                      <p>Change user role</p>
+                                      <p>{t('userManagement.actions.changeRole')}</p>
                                     </TooltipContent>
                                   </Tooltip>
                                   <Tooltip>
@@ -597,7 +599,7 @@ function UserManagementPageContent() {
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                      <p>{userProfile.is_active ? 'Deactivate user' : 'Activate user'}</p>
+                                      <p>{userProfile.is_active ? t('userManagement.actions.deactivateUser') : t('userManagement.actions.activateUser')}</p>
                                     </TooltipContent>
                                   </Tooltip>
                                 </>
@@ -613,7 +615,7 @@ function UserManagementPageContent() {
                 {filteredUsers.length === 0 && !loading && (
                   <div className="text-center py-8">
                     <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">No users found matching your criteria.</p>
+                    <p className="text-gray-500">{t('userManagement.search.noUsersFound')}</p>
                   </div>
                 )}
               </div>
@@ -628,22 +630,21 @@ function UserManagementPageContent() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-600" />
-              Deactivate User
+              {t('userManagement.dialogs.deactivateTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to deactivate <strong>{userToDeactivate?.full_name}</strong>? 
-              This user will no longer be able to sign in to the system until their account is reactivated.
+              {t('userManagement.dialogs.deactivateDescription', { name: userToDeactivate?.full_name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={handleCancelDeactivate}>
-              Cancel
+              {t('common.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleConfirmDeactivate}
               className="bg-red-600 hover:bg-red-700"
             >
-              Deactivate User
+              {t('userManagement.dialogs.deactivateConfirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

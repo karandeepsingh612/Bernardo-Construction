@@ -25,9 +25,9 @@ import {
 import { Eye, ArrowUpDown, LayoutGrid, LayoutList, RefreshCw, Plus } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { STATUS_LABELS, STAGE_LABELS } from "@/types"
 import { useAuth } from "@/lib/auth/auth-context"
 import { ProtectedRoute } from "@/components/auth/protected-route"
+import { useLanguage } from "@/lib/language-context"
 import {
   Tooltip,
   TooltipContent,
@@ -39,8 +39,10 @@ const PAGE_SIZE = 10
 
 function RequisitionsPageContent() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [requisitions, setRequisitions] = useState<Requisition[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [page, setPage] = useState(1)
   const [viewMode, setViewMode] = useState<'card' | 'table'>('card')
@@ -69,23 +71,51 @@ function RequisitionsPageContent() {
 
     console.log('Loading all requisitions for logged-in user')
     setLoading(true)
+    setError(null) // Clear any previous errors
+    
+    // Add timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      setLoading(false)
+      setError(t('requisitions.loadError'))
+      console.error('Requisitions load timeout after 10 seconds')
+    }, 10000) // 10 second timeout
+    
     try {
       const data = await loadRequisitions()
+      clearTimeout(timeoutId)
       console.log('Requisitions loaded successfully:', data.length, 'items')
       const sortedData = sortRequisitionsByDate(data, sortOrder)
       setRequisitions(sortedData)
     } catch (error) {
+      clearTimeout(timeoutId)
       console.error('Failed to load requisitions:', error)
+      setRequisitions([]) // Set empty array on error
+      setError(t('requisitions.loadError'))
     } finally {
       setLoading(false)
     }
-  }, [sortOrder]) // Only depend on sortOrder, not user
+  }, [user, sortOrder, t]) // Add t to dependencies
 
 
 
+  // Effect to handle initial load and navigation
   useEffect(() => {
-    loadRequisitionsData()
-  }, [loadRequisitionsData])
+    if (user) {
+      // Reset loading state and load data
+      setLoading(false)
+      setTimeout(() => {
+        loadRequisitionsData()
+      }, 0) // Use setTimeout to ensure state is reset first
+    }
+  }, [user]) // Only depend on user changes
+  
+  // Effect to handle sort order changes
+  useEffect(() => {
+    if (user && requisitions.length > 0) {
+      // Only reload if we already have data (sort order change)
+      loadRequisitionsData()
+    }
+  }, [sortOrder, loadRequisitionsData])
 
   const sortRequisitionsByDate = (data: Requisition[], order: 'asc' | 'desc') => {
     return [...data].sort((a, b) => {
@@ -100,16 +130,29 @@ function RequisitionsPageContent() {
   }
 
   const refreshRequisitions = async () => {
-    if (!user) return
+    if (!user || loading) return // Prevent refresh while already loading
     
     setLoading(true)
+    setError(null) // Clear any previous errors
+    
+    // Add timeout for refresh as well
+    const timeoutId = setTimeout(() => {
+      setLoading(false)
+      setError(t('requisitions.loadError'))
+      console.error('Requisitions refresh timeout after 10 seconds')
+    }, 10000)
+    
     try {
       const data = await loadRequisitions()
+      clearTimeout(timeoutId)
       const sortedData = sortRequisitionsByDate(data, sortOrder)
       setRequisitions(sortedData)
       console.log('Requisitions refreshed:', data.length, 'items loaded')
     } catch (error) {
+      clearTimeout(timeoutId)
       console.error('Failed to refresh requisitions:', error)
+      setRequisitions([]) // Set empty array on error
+      setError(t('requisitions.loadError'))
     } finally {
       setLoading(false)
     }
@@ -185,8 +228,8 @@ function RequisitionsPageContent() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-semibold">All Requisitions</h1>
-          <p className="text-gray-500 text-sm mt-1">Manage and track all material requisitions</p>
+          <h1 className="text-2xl font-semibold">{t('requisitions.title')}</h1>
+          <p className="text-gray-500 text-sm mt-1">{t('requisitions.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -229,7 +272,7 @@ function RequisitionsPageContent() {
               className="h-9 px-3 text-sm bg-white hover:bg-gray-50 border-gray-200 hover:border-blue-300 text-gray-700 hover:text-blue-700 transition-colors"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Create Requisition
+              {t('requisitions.new')}
             </Button>
           </Link>
         </div>
@@ -239,42 +282,42 @@ function RequisitionsPageContent() {
       <div className="bg-white rounded-lg shadow-sm mb-4">
         <div className="p-4">
           <div className="flex items-center gap-4">
-            <span className="font-medium">Filters</span>
+            <span className="font-medium">{t('common.filters')}</span>
             <Input
-              placeholder="Search requisitions..."
+              placeholder={t('requisitions.filters.search')}
               className="max-w-xs"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Statuses" />
+                <SelectValue placeholder={t('requisitions.filters.allStatuses')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="DRAFT">Draft</SelectItem>
-                <SelectItem value="pending-resident">Pending Resident</SelectItem>
-                <SelectItem value="pending-procurement">Pending Procurement</SelectItem>
-                <SelectItem value="pending-treasury">Pending Treasury</SelectItem>
-                <SelectItem value="pending-ceo">Pending CEO</SelectItem>
-                <SelectItem value="pending-payment">Pending Payment</SelectItem>
-                <SelectItem value="pending-storekeeper">Pending Storekeeper</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
+                            <SelectItem value="all">{t('requisitions.filters.allStatuses')}</SelectItem>
+            <SelectItem value="DRAFT">{t('requisitions.status.draft')}</SelectItem>
+            <SelectItem value="pending-resident">{t('requisitions.status.pending-resident')}</SelectItem>
+            <SelectItem value="pending-procurement">{t('requisitions.status.pending-procurement')}</SelectItem>
+            <SelectItem value="pending-treasury">{t('requisitions.status.pending-treasury')}</SelectItem>
+            <SelectItem value="pending-ceo">{t('requisitions.status.pending-ceo')}</SelectItem>
+            <SelectItem value="pending-payment">{t('requisitions.status.pending-payment')}</SelectItem>
+            <SelectItem value="pending-storekeeper">{t('requisitions.status.pending-storekeeper')}</SelectItem>
+            <SelectItem value="completed">{t('requisitions.status.completed')}</SelectItem>
+            <SelectItem value="rejected">{t('requisitions.status.rejected')}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={stageFilter} onValueChange={setStageFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Stages" />
+                <SelectValue placeholder={t('requisitions.filters.allStages')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Stages</SelectItem>
-                <SelectItem value="resident">Resident</SelectItem>
-                <SelectItem value="procurement">Procurement</SelectItem>
-                <SelectItem value="treasury">Treasury</SelectItem>
-                <SelectItem value="ceo">CEO</SelectItem>
-                <SelectItem value="payment">Payment</SelectItem>
-                <SelectItem value="storekeeper">Storekeeper</SelectItem>
+                <SelectItem value="all">{t('requisitions.filters.allStages')}</SelectItem>
+                <SelectItem value="resident">{t('dashboard.stages.resident')}</SelectItem>
+                <SelectItem value="procurement">{t('dashboard.stages.procurement')}</SelectItem>
+                <SelectItem value="treasury">{t('dashboard.stages.treasury')}</SelectItem>
+                <SelectItem value="ceo">{t('dashboard.stages.ceo')}</SelectItem>
+                <SelectItem value="payment">{t('dashboard.stages.payment')}</SelectItem>
+                <SelectItem value="storekeeper">{t('dashboard.stages.storekeeper')}</SelectItem>
               </SelectContent>
             </Select>
             <Button
@@ -283,7 +326,7 @@ function RequisitionsPageContent() {
               onClick={toggleSortOrder}
               className="ml-auto"
             >
-              Created Date
+              {t('requisitions.table.createdDate')}
               <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
           </div>
@@ -292,19 +335,45 @@ function RequisitionsPageContent() {
 
       {/* Content */}
       <div className="space-y-4">
-        {viewMode === 'table' ? (
+        {loading ? (
+          <div className="bg-white rounded-lg shadow-sm p-8">
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+              <p className="text-gray-600">{t('requisitions.loading')}</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="bg-white rounded-lg shadow-sm p-8">
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <p className="text-red-600 text-center font-medium mb-2">{t('requisitions.loadError')}</p>
+              <Button 
+                onClick={refreshRequisitions}
+                variant="outline"
+                className="mt-2"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                {t('requisitions.retry')}
+              </Button>
+            </div>
+          </div>
+        ) : viewMode === 'table' ? (
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Requisition Number</TableHead>
-                  <TableHead>Project</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Items</TableHead>
-                  <TableHead>Total Submitted</TableHead>
-                  <TableHead>Total Approved</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Stage</TableHead>
+                  <TableHead>{t('requisitions.table.requisitionNumber')}</TableHead>
+                  <TableHead>{t('requisitions.table.projectName')}</TableHead>
+                  <TableHead>{t('requisitions.table.createdDate')}</TableHead>
+                  <TableHead>{t('requisitions.table.items')}</TableHead>
+                  <TableHead>{t('dashboard.stats.totalSubmitted')}</TableHead>
+                  <TableHead>{t('dashboard.stats.totalApproved')}</TableHead>
+                  <TableHead>{t('requisitions.table.status')}</TableHead>
+                  <TableHead>{t('requisitions.table.currentStage')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -333,12 +402,12 @@ function RequisitionsPageContent() {
                     </TableCell>
                     <TableCell>
                       <Badge className={cn("text-xs", getStatusColor(requisition.status))}>
-                        {STATUS_LABELS[requisition.status]}
+                        {t(`requisitions.status.${requisition.status}`)}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={cn("text-xs", getStageColor(requisition.currentStage))}>
-                        {STAGE_LABELS[requisition.currentStage]}
+                        {t(`dashboard.stages.${requisition.currentStage}`)}
                       </Badge>
                     </TableCell>
                   </TableRow>
@@ -354,6 +423,15 @@ function RequisitionsPageContent() {
               </TableBody>
             </Table>
           </div>
+        ) : loading ? (
+          <div className="space-y-4">
+            <div className="bg-white rounded-lg shadow-sm p-8">
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+                <p className="text-gray-600">{t('requisitions.loading')}</p>
+              </div>
+            </div>
+          </div>
         ) : (
           <div className="space-y-4">
             {paginatedRequisitions.map((requisition) => (
@@ -368,10 +446,10 @@ function RequisitionsPageContent() {
                       {requisition.requisitionNumber}
                     </h3>
                     <Badge className={cn("text-xs", getStatusColor(requisition.status))}>
-                      {STATUS_LABELS[requisition.status]}
+                      {t(`requisitions.status.${requisition.status}`)}
                     </Badge>
                     <Badge variant="outline" className={cn("text-xs", getStageColor(requisition.currentStage))}>
-                      {STAGE_LABELS[requisition.currentStage]}
+                      {t(`dashboard.stages.${requisition.currentStage}`)}
                     </Badge>
                   </div>
                   <Button 
@@ -384,36 +462,36 @@ function RequisitionsPageContent() {
                     }}
                   >
                     <Eye className="h-4 w-4 mr-2" />
-                    View
+                    {t('requisitions.table.view')}
                   </Button>
                 </div>
 
                 <div className="grid grid-cols-3 gap-x-8 text-sm text-gray-600">
                   <div className="space-y-2">
                     <div>
-                      <span className="font-medium">Project:</span> {requisition.projectName}
+                      <span className="font-medium">{t('requisitions.table.projectName')}:</span> {requisition.projectName}
                     </div>
                     <div>
-                      <span className="font-medium">Total Submitted:</span> $
+                      <span className="font-medium">{t('dashboard.stats.totalSubmitted')}:</span> $
                       {requisition.items.reduce((sum, item) => sum + (item.total || 0), 0).toFixed(2)}
                     </div>
                   </div>
                   <div className="space-y-2">
                     <div>
-                      <span className="font-medium">Created:</span>{" "}
+                      <span className="font-medium">{t('requisitions.table.createdDate')}:</span>{" "}
                       {(() => {
                         const [year, month, day] = requisition.createdDate.split('T')[0].split('-');
                         return `${month}/${day}/${year}`;
                       })()}
                     </div>
                     <div>
-                      <span className="font-medium">Total Approved:</span> $
+                      <span className="font-medium">{t('dashboard.stats.totalApproved')}:</span> $
                       {requisition.items.reduce((sum, item) => sum + (item.approvalStatus === "approved" ? (item.total || 0) : 0), 0).toFixed(2)}
                     </div>
                   </div>
                   <div>
                     <div>
-                      <span className="font-medium">Items:</span> {requisition.items.length}
+                      <span className="font-medium">{t('requisitions.table.items')}:</span> {requisition.items.length}
                     </div>
                   </div>
                 </div>
@@ -444,7 +522,7 @@ function RequisitionsPageContent() {
                               status === "Save for Later" && "bg-purple-50 text-purple-700 border-purple-200"
                             )}
                           >
-                            {count} {status === "Save for Later" ? "Saved for Later" : status.charAt(0).toUpperCase() + status.slice(1)}
+                            {count} {status === "Save for Later" ? t('requisitionDetail.materialModal.status.saveForLater') : t(`requisitionDetail.materialModal.status.${status}`)}
                           </Badge>
                           <span className="text-sm text-gray-500">
                             {descriptions.join(", ")}
@@ -462,17 +540,17 @@ function RequisitionsPageContent() {
         {/* Pagination */}
         <div className="mt-4 bg-white rounded-lg shadow-sm p-4 flex items-center justify-between">
           <div className="text-sm text-gray-500">
-            Showing {requisitions.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, requisitions.length)} of {requisitions.length} results
+            {t('common.showing')} {requisitions.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1} {t('common.to')} {Math.min(page * PAGE_SIZE, requisitions.length)} {t('common.of')} {requisitions.length} {t('common.ofResults')}
           </div>
           <div className="flex-1 flex justify-center items-center">
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>Previous</Button>
-              <span className="text-sm">Page {page} of {totalPages}</span>
-              <Button variant="outline" size="sm" disabled={page === totalPages || totalPages === 0} onClick={() => setPage(page + 1)}>Next</Button>
+              <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>{t('common.previous')}</Button>
+              <span className="text-sm">{t('common.page')} {page} {t('common.of')} {totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page === totalPages || totalPages === 0} onClick={() => setPage(page + 1)}>{t('common.next')}</Button>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm">Go to page:</span>
+            <span className="text-sm">{t('common.goToPage')}:</span>
             <input
               type="number"
               min="1"
@@ -480,7 +558,7 @@ function RequisitionsPageContent() {
               defaultValue={page}
               className="w-14 px-2 py-1 border rounded text-sm"
             />
-            <Button variant="outline" size="sm">Go</Button>
+            <Button variant="outline" size="sm">{t('common.go')}</Button>
           </div>
         </div>
       </div>

@@ -18,6 +18,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { pdfjs } from 'react-pdf';
 import imageCompression from 'browser-image-compression';
 import decode from 'heic-decode';
+import { useLanguage } from "@/lib/language-context"
 
 // Move PdfPreview import inside the preview modal
 const PdfPreview = dynamic(() => import('./PdfPreview'), { 
@@ -43,6 +44,7 @@ export function DocumentUpload({
   userName,
 }: DocumentUploadProps) {
   const { toast } = useToast()
+  const { t } = useLanguage()
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [selectedDocumentType, setSelectedDocumentType] = useState<DocumentType | "">("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -172,7 +174,7 @@ export function DocumentUpload({
     if (file) {
       // Check file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
-        setUploadError("File size must be less than 10MB");
+        setUploadError(t('requisitionDetail.uploadDocument.fileTooLarge'));
         event.target.value = '';
         return;
       }
@@ -264,7 +266,7 @@ export function DocumentUpload({
 
   const handleUpload = async () => {
     if (!selectedFile || !selectedDocumentType) {
-      setUploadError("Please select a file and document type")
+              setUploadError(t('requisitionDetail.uploadDocument.pleaseSelectFile'))
       return
     }
 
@@ -365,7 +367,7 @@ export function DocumentUpload({
 
     } catch (error) {
       console.error("Upload error:", error)
-      setUploadError(error instanceof Error ? error.message : "Failed to upload file")
+              setUploadError(error instanceof Error ? error.message : t('requisitionDetail.uploadDocument.uploadError'))
     } finally {
       setIsUploading(false)
     }
@@ -609,12 +611,12 @@ export function DocumentUpload({
       >
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Documents ({documents.length})
+            {t('requisitionDetail.documents')} ({documents.length})
           <span className="ml-auto">{expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}</span>
           {expanded && documents.length > 0 && (
             <Button onClick={e => { e.stopPropagation(); setIsUploadModalOpen(true); }} size="sm" className="ml-2">
             <Upload className="h-4 w-4 mr-2" />
-            Upload Document
+            {t('requisitionDetail.actions.uploadDocument')}
           </Button>
           )}
         </CardTitle>
@@ -628,7 +630,7 @@ export function DocumentUpload({
             <p className="mb-4">Upload quotes, receipts, and other relevant documents</p>
             <Button onClick={() => setIsUploadModalOpen(true)}>
               <Upload className="h-4 w-4 mr-2" />
-              Upload First Document
+              {t('requisitionDetail.actions.uploadFirstDocument')}
             </Button>
           </div>
         ) : (
@@ -638,25 +640,25 @@ export function DocumentUpload({
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
-                    Document
+                    {t('requisitionDetail.documentTable.name')}
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
-                    Type
+                    {t('requisitionDetail.documentTable.type')}
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
-                    Stage
+                    {t('requisitionDetail.documentTable.stage')}
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
-                    Size
+                    {t('requisitionDetail.documentTable.size')}
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
-                    Uploaded By
+                    {t('requisitionDetail.documentTable.uploader')}
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
-                    Upload Date
+                    {t('requisitionDetail.documentTable.uploadDate')}
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
-                    Actions
+                    {t('requisitionDetail.documentTable.actions')}
                   </th>
                 </tr>
               </thead>
@@ -674,15 +676,15 @@ export function DocumentUpload({
                     </td>
                     <td className="px-3 py-3">
                         <div className="mt-1">
-                      <Badge className={getDocumentTypeColor(document.documentType)}>
-                        {DOCUMENT_TYPES[document.documentType]}
-                      </Badge>
+                                              <Badge className={getDocumentTypeColor(document.documentType)}>
+                          {t(`requisitionDetail.materialModal.displayValues.documentType.${document.documentType.replace('_', '')}`)}
+                        </Badge>
                         </div>
                     </td>
                     <td className="px-3 py-3">
                         <div className="mt-1">
                       <Badge variant="outline" className={getStageColor(document.stage)}>
-                        {STAGE_LABELS[document.stage]}
+                        {t(`requisitionDetail.stages.${document.stage}`)}
                       </Badge>
                         </div>
                     </td>
@@ -703,7 +705,7 @@ export function DocumentUpload({
                           size="sm"
                           variant="ghost"
                           onClick={() => handlePreview(document)}
-                          title="View Document"
+                          title={t('requisitionDetail.documentTable.view')}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -711,7 +713,7 @@ export function DocumentUpload({
                           size="sm"
                           variant="ghost"
                           onClick={() => handleDownload(document.url || '', document.fileName)}
-                          title="Download"
+                          title={t('requisitionDetail.documentTable.download')}
                         >
                           <Download className="h-4 w-4" />
                         </Button>
@@ -720,7 +722,7 @@ export function DocumentUpload({
                           variant="ghost"
                           onClick={() => confirmDelete(document.id)}
                           className="text-red-600 hover:text-red-800"
-                          title="Delete"
+                          title={t('requisitionDetail.documentTable.delete')}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -739,30 +741,30 @@ export function DocumentUpload({
       <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Upload Document</DialogTitle>
+            <DialogTitle>{t('requisitionDetail.uploadDocument.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="document-type">Document Type *</Label>
+              <Label htmlFor="document-type">{t('requisitionDetail.uploadDocument.documentType')} *</Label>
               <Select
                 value={selectedDocumentType}
                 onValueChange={(value) => setSelectedDocumentType(value as DocumentType)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select document type" />
+                  <SelectValue placeholder={t('requisitionDetail.uploadDocument.selectDocumentType')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {uniqueDocumentTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {DOCUMENT_TYPES[type]}
-                    </SelectItem>
-                  ))}
+                                          {uniqueDocumentTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {t(`requisitionDetail.materialModal.displayValues.documentType.${type.replace('_', '')}`)}
+                          </SelectItem>
+                        ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="file-upload">Select File *</Label>
+              <Label htmlFor="file-upload">{t('requisitionDetail.uploadDocument.selectFile')} *</Label>
               <div className="relative mt-1">
                 <div className="flex flex-col gap-2">
                   <Button
@@ -773,7 +775,7 @@ export function DocumentUpload({
                     disabled={isUploading}
                   >
                     <Upload className="h-4 w-4 mr-2" />
-                    Choose File
+                    {t('requisitionDetail.uploadDocument.chooseFile')}
                   </Button>
                   {selectedFile && (
                     <div className="p-2 bg-gray-50 rounded-md">
@@ -804,7 +806,7 @@ export function DocumentUpload({
                 )}
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Supported formats: PDF, Word, Excel, Images (including iPhone HEIC photos). Max size: 10MB
+                {t('requisitionDetail.uploadDocument.supportedFormats')}
               </p>
             </div>
 
@@ -828,16 +830,16 @@ export function DocumentUpload({
 
             <div className="p-3 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-800">
-                <strong>Current Stage:</strong> {STAGE_LABELS[currentStage]}
+                <strong>{t('requisitionDetail.uploadDocument.currentStage')}:</strong> {t(`requisitionDetail.stages.${currentStage}`)}
               </p>
               <p className="text-xs text-blue-600 mt-1">
-                This document will be associated with the current workflow stage.
+                {t('requisitionDetail.uploadDocument.documentAssociation')}
               </p>
             </div>
           </div>
           <DialogFooter className="flex gap-2">
             <Button variant="outline" onClick={() => setIsUploadModalOpen(false)} disabled={isUploading} className="flex-1">
-              Cancel
+              {t('requisitionDetail.uploadDocument.cancel')}
             </Button>
             <Button 
               onClick={handleUpload} 
@@ -847,12 +849,12 @@ export function DocumentUpload({
               {isUploading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Uploading...
+                  {t('requisitionDetail.uploadDocument.uploading')}
                 </>
               ) : (
                 <>
               <Upload className="h-4 w-4 mr-2" />
-              Upload
+              {t('requisitionDetail.uploadDocument.upload')}
                 </>
               )}
             </Button>
@@ -901,16 +903,16 @@ export function DocumentUpload({
                   <div>
                     <span className="font-medium text-gray-700">Document Type:</span>
                     <div className="mt-1">
-                      <Badge className={getDocumentTypeColor(documentToView.documentType)}>
-                        {DOCUMENT_TYPES[documentToView.documentType]}
-                      </Badge>
+                                              <Badge className={getDocumentTypeColor(documentToView.documentType)}>
+                          {t(`requisitionDetail.materialModal.displayValues.documentType.${documentToView.documentType.replace('_', '')}`)}
+                        </Badge>
                     </div>
                   </div>
                   <div>
                     <span className="font-medium text-gray-700">Stage:</span>
                     <div className="mt-1">
                       <Badge variant="outline" className={getStageColor(documentToView.stage)}>
-                        {STAGE_LABELS[documentToView.stage]}
+                        {t(`requisitionDetail.stages.${documentToView.stage}`)}
                       </Badge>
                     </div>
                   </div>
