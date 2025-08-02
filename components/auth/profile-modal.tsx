@@ -21,7 +21,7 @@ interface ProfileModalProps {
 }
 
 export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -88,7 +88,7 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
                 <div>
                   <p className="text-sm font-medium text-gray-700">{t('profile.memberSince')}</p>
                   <p className="text-sm text-gray-600">
-                    {new Date(user.created_at).toLocaleDateString('es-ES', {
+                    {new Date(user.created_at).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
