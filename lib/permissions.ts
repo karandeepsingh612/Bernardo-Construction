@@ -200,8 +200,13 @@ export const stageCompletionRules: Record<WorkflowStage, (requisition: Requisiti
     );
   },
   storekeeper: (requisition) => {
-    return requisition.items.every(item => 
-      item.deliveryStatus === "Complete"
-    );
+    return requisition.items.every(item => {
+      // Skip delivery validation for items that are not approved (Save for Later or Rejected)
+      if (item.approvalStatus === "Save for Later" || item.approvalStatus === "rejected") {
+        return true // Skip this item
+      }
+      
+      return item.deliveryStatus === "Complete"
+    });
   }
 };

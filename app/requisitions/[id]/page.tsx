@@ -287,9 +287,20 @@ function RequisitionDetailPageContent() {
     if (!requisition) return [];
     const errors: string[] = [];
 
-    // Use currentStage instead of userRole for validation
-    // This ensures that when completing a stage, we check the rules for that stage
-    const stageToValidate = requisition.currentStage;
+    // Determine which stage is being completed by checking which stage is not complete
+    const completedStages: WorkflowStage[] = []
+    if (requisition.residentComplete) completedStages.push("resident")
+    if (requisition.procurementComplete) completedStages.push("procurement")
+    if (requisition.treasuryComplete) completedStages.push("treasury")
+    if (requisition.ceoComplete) completedStages.push("ceo")
+    if (requisition.paymentComplete) completedStages.push("payment")
+    if (requisition.storekeeperComplete) completedStages.push("storekeeper")
+    
+    // Find the stage being completed (the first incomplete stage)
+    const allStages: WorkflowStage[] = ["resident", "procurement", "treasury", "ceo", "payment", "storekeeper"]
+    const stageToValidate = allStages.find(stage => !completedStages.includes(stage)) || requisition.currentStage
+    
+
 
     switch (stageToValidate) {
       case "resident":
@@ -331,6 +342,11 @@ function RequisitionDetailPageContent() {
         break
       case "storekeeper":
         requisition.items.forEach((item, index) => {
+          // Skip delivery validation for items that are not approved (Save for Later or Rejected)
+          if (item.approvalStatus === "Save for Later" || item.approvalStatus === "rejected") {
+            return // Skip this item
+          }
+          
           if (!item.deliveryStatus || item.deliveryStatus !== "Complete") {
             errors.push(`Item ${index + 1}: Delivery must be fully completed before this stage can be completed.`)
           }

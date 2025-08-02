@@ -75,8 +75,24 @@ export function StageCompletionPanel({ requisition, userRole, onComplete }: Stag
 
   const getValidationErrors = () => {
     const errors: string[] = []
+    
+    // Determine which stage is being completed by checking which stage is not complete
+    // and matches the current stage or the stage before it
+    const completedStages: WorkflowStage[] = []
+    if (requisition.residentComplete) completedStages.push("resident")
+    if (requisition.procurementComplete) completedStages.push("procurement")
+    if (requisition.treasuryComplete) completedStages.push("treasury")
+    if (requisition.ceoComplete) completedStages.push("ceo")
+    if (requisition.paymentComplete) completedStages.push("payment")
+    if (requisition.storekeeperComplete) completedStages.push("storekeeper")
+    
+    // Find the stage being completed (the first incomplete stage)
+    const allStages: WorkflowStage[] = ["resident", "procurement", "treasury", "ceo", "payment", "storekeeper"]
+    const stageBeingCompleted = allStages.find(stage => !completedStages.includes(stage)) || currentStage
+    
 
-    switch (currentStage) {
+
+    switch (stageBeingCompleted) {
       case "resident":
         requisition.items.forEach((item, index) => {
           if (!item.description) errors.push(`Item ${index + 1}: Description is required`)
@@ -115,6 +131,11 @@ export function StageCompletionPanel({ requisition, userRole, onComplete }: Stag
         break
       case "storekeeper":
         requisition.items.forEach((item, index) => {
+          // Skip delivery validation for items that are not approved (Save for Later or Rejected)
+          if (item.approvalStatus === "Save for Later" || item.approvalStatus === "rejected") {
+            return // Skip this item
+          }
+          
           if (!item.deliveryStatus || item.deliveryStatus !== "Complete") {
             errors.push(`Item ${index + 1}: Delivery must be fully completed before this stage can be completed.`)
           }
